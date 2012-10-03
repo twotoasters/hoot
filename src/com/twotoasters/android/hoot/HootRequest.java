@@ -335,8 +335,10 @@ public class HootRequest<T> {
         } else {
             mResult.setResponse(convertStreamToString(mResult
                     .getResponseStream()));
-            mResult.setDeserializedResult(mDeserializer.deserialize(mResult
-                    .getResponseString()));
+            if (mDeserializer != null) {
+                mResult.setDeserializedResult(mDeserializer.deserialize(mResult
+                        .getResponseString()));
+            }
         }
     }
 

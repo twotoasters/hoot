@@ -51,7 +51,7 @@ public class Hoot {
         return mBaseUrl;
     }
 
-    public boolean isBasicAuth() {
+    boolean isBasicAuth() {
         return mBasicAuthUsername != null && mBasicAuthPassword != null;
     }
 
