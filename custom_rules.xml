@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="imported">
+    <!-- The out file for the built SDK. -->
+    <property name="out.custom.jar.file" value="${ant.project.name}.jar" />
+
+    <!-- The out directory for the Javadoc. -->
+    <property name="out.custom.docs.dir" value="docs" />
+
+    <!-- The out directory for the built HTML Javadoc. -->
+    <property name="out.custom.docs.html.dir" value="${out.custom.docs.dir}/html" />
+
+    <!-- The out file for the built Javadoc archive. -->
+    <property name="out.custom.docs.jar.file" value="${ant.project.name}-javadoc.jar" />
+
+    <!-- The absolute path to the git executable. -->
+    <property name="git.path" location="/usr/bin/git" />
+
+    <!-- Check if the .git path is valid. -->
+    <available file="${git.path}" type="file" property="git.installed" />
+
+    <!-- Check if .git is present in the current directory. -->
+    <available file=".git" type="dir" property="git.project" />
+
+    <!-- Retrive the build version and create two properties. -->
+    <target name="-build-version" description="" if="git.project">
+        <exec executable="${git.path}" outputproperty="git.revision" failifexecutionfails="true" errorproperty="">
+            <arg value="rev-parse" />
+            <arg value="--verify" />
+            <arg value="HEAD" />
+        </exec>
+
+        <exec executable="${git.path}" outputproperty="git.short" failifexecutionfails="true" errorproperty="">
+            <arg value="rev-parse" />
+            <arg value="--short" />
+            <arg value="--verify" />
+            <arg value="HEAD" />
+        </exec>
+        <echo message="Building version ${git.revision} ..." />
+    </target>
+
+    <!-- Run before anything else. -->
+    <target name="-pre-setup">
+        <if condition="${git.installed}">
+            <else>
+                <fail message="Could not locate git at ${git.path}! Please add git.path=/path/to/git to your local.properties." />
+            </else>
+        </if>
+    </target>
+
+    <!-- Run before building. -->
+    <target name="-pre-build" depends="-pre-setup"></target>
+
+    <!-- Run before compiling. -->
+    <target name="-pre-compile"></target>
+
+    <!-- Run after compiling. -->
+    <target name="-post-compile"></target>
+
+    <!-- Run after the build has completed. -->
+    <target name="-post-build"></target>
+
+    <!-- Generate the HTML Javadoc and a Jar archive. -->
+    <target name="docs">
+        <javadoc
+            destdir="${out.absolute.dir}/${out.custom.docs.html.dir}"
+            classpath="${sdk.dir}/platforms/${target}/android.jar"
+            access="protected" author="true" version="true" use="true"
+            failonerror="true">
+            <packageset dir="${source.absolute.dir}">
+                <include name="com/twotoasters/android/hoot/**" />
+            </packageset>
+        </javadoc>
+        <echo level="info">----------</echo>
+
+        <!-- Package the HTML Javadoc into a Jar archive. -->
+        <jar destfile="${out.absolute.dir}/${out.custom.docs.jar.file}">
+            <fileset dir="${out.absolute.dir}/${out.custom.docs.html.dir}" />
+        </jar>
+    </target>
+
+    <!-- Compile the SDK into class files and package into a Jar archive. -->
+    <target name="dist" depends="-build-version,-pre-setup,-pre-build,-build-setup,docs">
+        <!-- merge the project's own classpath and the tested project's classpath -->
+        <path id="project.javac.classpath">
+            <path refid="project.all.jars.path" />
+            <path refid="tested.project.classpath" />
+        </path>
+
+        <javac encoding="${java.encoding}"
+                source="${java.source}" target="${java.target}"
+                debug="true" extdirs="" includeantruntime="false"
+                destdir="${out.classes.absolute.dir}"
+                bootclasspathref="project.target.class.path"
+                verbose="${verbose}"
+                classpathref="project.javac.classpath"
+                fork="${need.javac.fork}">
+            <src path="${source.absolute.dir}" />
+            <src path="${gen.absolute.dir}" />
+            <compilerarg line="${java.compilerargs}" />
+        </javac>
+        <echo level="info">----------</echo>
+
+        <jar destfile="${out.absolute.dir}/${out.custom.jar.file}">
+            <fileset
+                dir="${out.classes.absolute.dir}"
+                includes="**/*.class"
+                excludes="${project.app.package.path}/R.class ${project.app.package.path}/R$*.class ${project.app.package.path}/Manifest.class ${project.app.package.path}/Manifest$*.class ${project.app.package.path}/BuildConfig.class"/>
+            <fileset dir="${source.absolute.dir}" excludes="**/*.java ${android.package.excludes}" />
+        </jar>
+        <echo level="info">----------</echo>
+
+        <!-- Create a tar archive of the build artifacts. -->
+        <echo message="Archiving build artifacts ..." />
+        <tar destfile="${out.absolute.dir}/${ant.project.name}.tar"
+            basedir="${out.absolute.dir}"
+            includes="${out.custom.jar.file},${out.custom.docs.dir}" />
+
+        <!-- GZip the build artifacts. -->
+        <gzip destfile="${out.absolute.dir}/${ant.project.name}-${git.short}.tar.gz"
+            src="${out.absolute.dir}/${ant.project.name}.tar" />
+        <delete file="${out.absolute.dir}/${ant.project.name}.tar"
+            failonerror="true"
+            quiet="true" />
+    </target>
+
+</project>
