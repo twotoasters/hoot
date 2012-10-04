@@ -25,7 +25,11 @@ import java.util.Map;
 
 import org.apache.commons.io.IOUtils;
 
+import android.util.Log;
+
 public class HootResult {
+
+    private static final String TAG = HootResult.class.getSimpleName();
 
     public boolean isSuccess() {
         return mSuccessfulResponseCodes != null ? mSuccessfulResponseCodes
@@ -50,7 +54,7 @@ public class HootResult {
     }
 
     public Object getDeserializedResult() {
-        return mDeserializer.getDeserializedResult();
+        return mDeserializedResult;
     }
 
     // -------------------------------------------------------------------------
@@ -69,6 +73,7 @@ public class HootResult {
     private Map<String, List<String>> mHeaders;
     private InputStream mResponseStream;
     private HootDeserializer<?> mDeserializer;
+    private Object mDeserializedResult;
 
     <T> void setDeserializer(HootDeserializer<T> deserializer) {
         mDeserializer = deserializer;
@@ -102,20 +107,39 @@ public class HootResult {
         return mResponseStream;
     }
 
-    void deserializeResult() throws IOException {
+    void deserializeResult(HootGlobalDeserializer globalDeserializer,
+            Class<?> expectedType) throws IOException {
+        Log.v(TAG,
+                globalDeserializer == null ? (mDeserializer == null ? "No deserializer"
+                        : "Request deserializer")
+                        : "Global deserializer");
         // see if we need to read out to a string. Either we have no
         // deserializer or we do and it operates on a string.
         if (mDeserializer == null
+                && globalDeserializer == null
                 || (mDeserializer != null && !mDeserializer
-                        .isStreamDeserializer())) {
+                        .isStreamDeserializer())
+                || (mDeserializer == null && globalDeserializer != null
+                        && expectedType != null && !globalDeserializer
+                            .isStreamDeserializer())) {
             setResponse(convertStreamToString(getResponseStream()));
         }
 
         if (mDeserializer != null) {
             if (mDeserializer.isStreamDeserializer()) {
-                mDeserializer.performDeserialize(getResponseStream());
+                mDeserializedResult = mDeserializer
+                        .performDeserialize(getResponseStream());
             } else {
-                mDeserializer.performDeserialize(getResponseString());
+                mDeserializedResult = mDeserializer
+                        .performDeserialize(getResponseString());
+            }
+        } else if (globalDeserializer != null && expectedType != null) {
+            if (globalDeserializer.isStreamDeserializer()) {
+                mDeserializedResult = globalDeserializer.performDeserialize(
+                        getResponseStream(), expectedType);
+            } else {
+                mDeserializedResult = globalDeserializer.performDeserialize(
+                        getResponseString(), expectedType);
             }
         }
 

@@ -46,12 +46,14 @@ public abstract class HootDeserializer<T> {
         return mDeserializedStorage;
     }
 
-    void performDeserialize(InputStream responseStream) {
+    T performDeserialize(InputStream responseStream) {
         mDeserializedStorage = deserialize(responseStream);
+        return mDeserializedStorage;
     }
 
-    void performDeserialize(String responseString) {
+    T performDeserialize(String responseString) {
         mDeserializedStorage = deserialize(responseString);
+        return mDeserializedStorage;
     }
 
 }

@@ -17,6 +17,7 @@
 package com.twotoasters.android.hoottestapplication.test;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.net.HttpURLConnection;
@@ -28,13 +29,18 @@ import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import org.codehaus.jackson.JsonParseException;
+import org.codehaus.jackson.map.JsonMappingException;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.json.JSONObject;
 
 import android.test.InstrumentationTestCase;
+import android.test.suitebuilder.annotation.SmallTest;
 import android.util.Log;
 
 import com.twotoasters.android.hoot.Hoot;
 import com.twotoasters.android.hoot.HootDeserializer;
+import com.twotoasters.android.hoot.HootGlobalDeserializer;
 import com.twotoasters.android.hoot.HootRequest;
 import com.twotoasters.android.hoot.HootRequest.HootRequestListener;
 import com.twotoasters.android.hoot.HootResult;
@@ -76,6 +82,27 @@ public class HootTest extends InstrumentationTestCase {
                 && request.getResult().isSuccess()
                 && request.getResult().getDeserializedResult() != null
                 && deserializer.getDeserializedResult().test
+                        .equals("This is a test"));
+    }
+
+    @SmallTest
+    public void testGlobalDeserializer() {
+        final CountDownLatch latch = new CountDownLatch(1);
+        mHootRestClient.setGlobalDeserializer(new TestHootGlobalDeserializer());
+        final HootRequest request = mHootRestClient.createRequest().get()
+                .setExpectedType(Get.class)
+                .bindListener(new TestHootListener(latch, true));
+
+        assertNotNull(request);
+
+        executeTest(request, latch);
+
+        mHootRestClient.setGlobalDeserializer(null);
+
+        assertTrue(request.getResult() != null
+                && request.getResult().isSuccess()
+                && request.getResult().getDeserializedResult() != null
+                && ((Get) request.getResult().getDeserializedResult()).test
                         .equals("This is a test"));
     }
 
@@ -256,7 +283,7 @@ public class HootTest extends InstrumentationTestCase {
         }
 
         try {
-            latch.await(10, TimeUnit.SECONDS);
+            latch.await(200, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -331,6 +358,43 @@ public class HootTest extends InstrumentationTestCase {
             } catch (Exception e) {
                 e.printStackTrace();
             }
+            return null;
+        }
+    }
+
+    private class TestHootGlobalDeserializer extends HootGlobalDeserializer {
+        private final String TAG = TestHootGlobalDeserializer.class
+                .getSimpleName();
+
+        public TestHootGlobalDeserializer() {
+            super(true);
+        }
+
+        /*
+         * (non-Javadoc)
+         * 
+         * @see
+         * com.twotoasters.android.hoot.HootGlobalDeserializer#deserialize(java
+         * .io.InputStream, java.lang.Class)
+         */
+        @Override
+        public <T> T deserialize(InputStream is, Class<T> clazz) {
+            Log.v(TAG, "deserializing [" + clazz.getSimpleName() + "]");
+            ObjectMapper mapper = new ObjectMapper();
+            try {
+                T object = mapper.readValue(is, clazz);
+                return object;
+            } catch (JsonParseException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            } catch (JsonMappingException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+
             return null;
         }
 

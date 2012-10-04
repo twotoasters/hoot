@@ -17,6 +17,7 @@
 package com.twotoasters.android.hoot;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.Iterator;
@@ -186,6 +187,11 @@ public class HootRequest {
         return this;
     }
 
+    public HootRequest setExpectedType(Class<?> type) {
+        mExpectedType = type;
+        return this;
+    }
+
     public HootRequest execute() throws IllegalStateException {
         if (mTask == null && !isComplete()) {
             mTask = new HootTask();
@@ -257,6 +263,7 @@ public class HootRequest {
     private boolean mComplete = false;
     private Object mOpaqueTag;
     private boolean mCancelled;
+    private Class<?> mExpectedType;
 
     HootRequest(Hoot hoot) {
         mHoot = hoot;
@@ -332,6 +339,10 @@ public class HootRequest {
             }
         }
         return builder.build();
+    }
+
+    void deserializeResult() throws IOException {
+        mResult.deserializeResult(mHoot.getGlobalDeserializer(), mExpectedType);
     }
 
 }

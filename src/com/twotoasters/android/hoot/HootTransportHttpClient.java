@@ -154,7 +154,7 @@ class HootTransportHttpClient implements HootTransport {
                 if (entity != null) {
                     is = entity.getContent();
                     result.setResponseStream(new BufferedInputStream(is));
-                    result.deserializeResult();
+                    request.deserializeResult();
                 }
             }
 

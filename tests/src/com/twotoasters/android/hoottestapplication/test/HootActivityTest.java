@@ -85,7 +85,6 @@ public class HootActivityTest extends ActivityTestCase<HootTestActivity> {
 
             }, 15, TimeUnit.SECONDS);
         } catch (TimeoutException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
         assertTrue(activity.mRequest != null
@@ -117,7 +116,6 @@ public class HootActivityTest extends ActivityTestCase<HootTestActivity> {
 
             }, 15, TimeUnit.SECONDS);
         } catch (TimeoutException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
         assertTrue(activity.mRequest != null

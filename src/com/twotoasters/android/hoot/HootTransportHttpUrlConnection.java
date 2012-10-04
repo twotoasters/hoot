@@ -71,7 +71,7 @@ class HootTransportHttpUrlConnection implements HootTransport {
                 hootResult.setHeaders(connection.getHeaderFields());
                 hootResult.setResponseStream(new BufferedInputStream(connection
                         .getInputStream()));
-                hootResult.deserializeResult();
+                request.deserializeResult();
             } else {
                 hootResult.setResponseStream(new BufferedInputStream(connection
                         .getErrorStream()));

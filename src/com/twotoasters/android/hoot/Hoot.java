@@ -48,6 +48,10 @@ public class Hoot {
         mBasicAuthPassword = password;
     }
 
+    public void setGlobalDeserializer(HootGlobalDeserializer deserializer) {
+        mGlobalDeserializer = deserializer;
+    }
+
     // -------------------------------------------------------------------------
     // END OF PUBLIC INTERFACE
     // -------------------------------------------------------------------------
@@ -55,6 +59,7 @@ public class Hoot {
     private String mBasicAuthPassword = null;
     private String mBaseUrl;
     private HootTransport mTransport;
+    private HootGlobalDeserializer mGlobalDeserializer;
 
     private Hoot(String baseUrl) {
         mBaseUrl = baseUrl;
@@ -93,6 +98,10 @@ public class Hoot {
             mTransport = new HootTransportHttpClient();
         }
         mTransport.setup(this);
+    }
+
+    HootGlobalDeserializer getGlobalDeserializer() {
+        return mGlobalDeserializer;
     }
 
 }
