@@ -16,9 +16,8 @@
 
 package com.twotoasters.android.hoot;
 
+import android.os.Build;
 import android.util.Base64;
-
-import com.twotoasters.android.hoot.HootRequest.HootRequestListener;
 
 public class Hoot {
 
@@ -26,8 +25,22 @@ public class Hoot {
         return new Hoot(baseUrl);
     }
 
-    public HootRequest createRequest(HootRequestListener listener) {
-        return new HootRequest(this, listener);
+    public HootRequest createRequest() {
+        synchronized (this) {
+            if (mTransport == null) {
+                setupTransport();
+            }
+        }
+        return new HootRequest(this);
+    }
+
+    public HootResult executeRequestSynchronously(HootRequest request) {
+        synchronized (this) {
+            if (mTransport == null) {
+                setupTransport();
+            }
+        }
+        return mTransport.synchronousExecute(request);
     }
 
     public void setBasicAuth(String username, String password) {
@@ -41,6 +54,7 @@ public class Hoot {
     private String mBasicAuthUsername = null;
     private String mBasicAuthPassword = null;
     private String mBaseUrl;
+    private HootTransport mTransport;
 
     private Hoot(String baseUrl) {
         mBaseUrl = baseUrl;
@@ -66,6 +80,19 @@ public class Hoot {
         return "Basic "
                 + Base64.encodeToString(new String(getBasicAuthUsername() + ":"
                         + getBasicAuthPassword()).getBytes(), Base64.NO_WRAP);
+    }
+
+    void cancelRequest(HootRequest hootRequest) {
+        mTransport.cancel(hootRequest);
+    }
+
+    private void setupTransport() {
+        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.FROYO) {
+            mTransport = new HootTransportHttpUrlConnection();
+        } else {
+            mTransport = new HootTransportHttpClient();
+        }
+        mTransport.setup(this);
     }
 
 }

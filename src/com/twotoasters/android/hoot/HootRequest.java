@@ -101,6 +101,10 @@ public class HootRequest {
         return mComplete;
     }
 
+    public boolean isCancelled() {
+        return mCancelled;
+    }
+
     public HootRequest setResource(String resource) {
         mResource = resource;
         return this;
@@ -177,11 +181,6 @@ public class HootRequest {
         return this;
     }
 
-    public HootRequest setBasicAuth(String username, String password) {
-        // TODO
-        return this;
-    }
-
     public HootRequest setTag(Object opaque) {
         mOpaqueTag = opaque;
         return this;
@@ -199,10 +198,13 @@ public class HootRequest {
     }
 
     public void cancel() {
+        mCancelled = true;
         if (mTask != null) {
             mTask.cancel();
             mTask = null;
         }
+
+        getHoot().cancelRequest(this);
     }
 
     /**
@@ -211,7 +213,7 @@ public class HootRequest {
      * 
      * @param listener
      */
-    public void bindListener(HootRequestListener listener) {
+    public HootRequest bindListener(HootRequestListener listener) {
         mListener = listener;
         if (mComplete) {
             if (getResult().isSuccess()) {
@@ -220,6 +222,8 @@ public class HootRequest {
                 listener.onFailure(this, getResult());
             }
         }
+
+        return this;
     }
 
     public void unbindListener(boolean cancel) {
@@ -242,21 +246,21 @@ public class HootRequest {
     private static final int DEFAULT_NUM_RETRIES = 0;
     private Operation mOperation;
     private int mNumRetries = DEFAULT_NUM_RETRIES;
-    private HootTask mTask = null;
+    private HootTask mTask;
     private HootResult mResult = new HootResult();
-    private Map<String, String> mQueryParameters = null;
-    private Properties mHeaders = null;
-    private InputStream mData = null;
-    private HootRequestListener mListener = null;
+    private Map<String, String> mQueryParameters;
+    private Properties mHeaders;
+    private InputStream mData;
+    private HootRequestListener mListener;
     private String mResource;
     private Hoot mHoot;
     private boolean mComplete = false;
-    private Object mOpaqueTag = null;
+    private Object mOpaqueTag;
+    private boolean mCancelled;
 
-    HootRequest(Hoot hoot, HootRequestListener listener) {
+    HootRequest(Hoot hoot) {
         mHoot = hoot;
         mOperation = Operation.GET;
-        mListener = listener;
     }
 
     enum Operation {

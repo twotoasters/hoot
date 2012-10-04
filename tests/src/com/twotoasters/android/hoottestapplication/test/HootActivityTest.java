@@ -56,7 +56,6 @@ public class HootActivityTest extends ActivityTestCase<HootTestActivity> {
 
             }, 5, TimeUnit.SECONDS);
         } catch (TimeoutException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
 

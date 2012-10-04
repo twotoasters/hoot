@@ -15,9 +15,9 @@
  */
 
 package com.twotoasters.android.hoottestapplication.data;
+
 import org.json.JSONException;
 import org.json.JSONObject;
-
 
 public class GetWithHeadersAndParams {
     public String headers;
@@ -29,7 +29,6 @@ public class GetWithHeadersAndParams {
         try {
             data.params = GetWithParams.fromJson(json.getJSONObject("params"));
         } catch (JSONException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
         return data;

@@ -115,7 +115,7 @@ public class HootActivityHelper {
     public HootRequest createRequest(Hoot kit, HootRequestListener listener) {
 
         HootRequest request = kit
-                .createRequest(new HootActivityHelperRequestListener(listener));
+                .createRequest();
         mRequests.add(request);
         return request;
     }

@@ -17,29 +17,23 @@
 package com.twotoasters.android.hoot;
 
 import android.os.AsyncTask;
-import android.os.Build;
 
 public class HootTask extends AsyncTask<HootRequest, HootRequest, HootRequest> {
-
-    private HootTransport mTransport = null;
 
     @Override
     protected HootRequest doInBackground(HootRequest... params) {
         HootRequest request = params[0];
+        if (isCancelled()) {
+            return request;
+        }
 
         // let the UI thread get an update so we know we've started the request
         publishProgress(params);
 
-        // create our transport
-        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.FROYO) {
-            mTransport = new HootTransportHttpUrlConnection();
-        } else {
-            mTransport = new HootTransportHttpClient();
-        }
-
         do {
-            mTransport.synchronousExecute(request);
-            if (request.getResult().isSuccess()) {
+            HootResult result = request.getHoot().executeRequestSynchronously(
+                    request);
+            if (result.isSuccess()) {
                 return request;
             }
         } while (request.shouldRetry() && !isCancelled());
@@ -49,7 +43,6 @@ public class HootTask extends AsyncTask<HootRequest, HootRequest, HootRequest> {
 
     @Override
     protected void onPostExecute(HootRequest request) {
-        mTransport = null;
         if (request != null && request.getListener() != null
                 && request.getResult() != null) {
             request.getListener().onRequestCompleted(request);
@@ -73,9 +66,6 @@ public class HootTask extends AsyncTask<HootRequest, HootRequest, HootRequest> {
     }
 
     void cancel() {
-        this.cancel(true);
-        if (mTransport != null) {
-            mTransport.cancel();
-        }
+        cancel(true);
     }
 }

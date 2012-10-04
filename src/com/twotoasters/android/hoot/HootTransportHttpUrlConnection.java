@@ -23,7 +23,9 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.ProtocolException;
 import java.net.URL;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 
 import org.apache.commons.io.IOUtils;
 
@@ -32,60 +34,69 @@ import android.util.Log;
 class HootTransportHttpUrlConnection implements HootTransport {
 
     @Override
-    public void synchronousExecute(HootRequest request) {
-        if (mCancelled) {
-            return;
+    public void setup(Hoot hoot) {
+        // Nothing really to do here for this one.
+    }
+
+    @Override
+    public HootResult synchronousExecute(HootRequest request) {
+        if (request.isCancelled()) {
+            return request.getResult();
         }
 
         mStreamingMode = (request.getQueryParameters() == null && request
                 .getData() == null) ? StreamingMode.CHUNKED
                 : StreamingMode.FIXED;
-        mConnection = null;
+        HttpURLConnection connection = null;
         try {
             String url = request.buildUri().toString();
             Log.v(TAG, "Executing [" + url + "]");
-            mConnection = (HttpURLConnection) new URL(url).openConnection();
+            connection = (HttpURLConnection) new URL(url).openConnection();
+            synchronized (mConnectionMap) {
+                mConnectionMap.put(request, connection);
+            }
 
-            setRequestMethod(request);
-            setRequestHeaders(request);
+            setRequestMethod(request, connection);
+            setRequestHeaders(request, connection);
 
             if (request.getData() != null) {
-                setRequestData(request);
+                setRequestData(request, connection);
             }
             HootResult hootResult = request.getResult();
-            hootResult.setResponseCode(mConnection.getResponseCode());
+            hootResult.setResponseCode(connection.getResponseCode());
             Log.d(TAG,
                     " - received response code ["
-                            + mConnection.getResponseCode() + "]");
+                            + connection.getResponseCode() + "]");
             if (request.getResult().isSuccess()) {
-                hootResult.setHeaders(mConnection.getHeaderFields());
-                hootResult.setResponseStream(new BufferedInputStream(
-                        mConnection.getInputStream()));
+                hootResult.setHeaders(connection.getHeaderFields());
+                hootResult.setResponseStream(new BufferedInputStream(connection
+                        .getInputStream()));
                 hootResult.deserializeResult();
             } else {
-                hootResult.setResponseStream(new BufferedInputStream(
-                        mConnection.getErrorStream()));
+                hootResult.setResponseStream(new BufferedInputStream(connection
+                        .getErrorStream()));
             }
         } catch (Exception e) {
             request.getResult().setException(e);
             e.printStackTrace();
         } finally {
-            synchronized (this) {
-                if (mConnection != null) {
-                    mConnection.disconnect();
-                    mConnection = null;
+            if (connection != null) {
+                synchronized (mConnectionMap) {
+                    mConnectionMap.remove(request);
                 }
+                connection.disconnect();
+                connection = null;
             }
         }
-
+        return request.getResult();
     }
 
     @Override
-    public void cancel() {
-        synchronized (this) {
-            mCancelled = true;
-            if (mConnection != null) {
-                mConnection.disconnect();
+    public void cancel(HootRequest request) {
+        synchronized (mConnectionMap) {
+            HttpURLConnection connection = mConnectionMap.get(request);
+            if (connection != null) {
+                connection.disconnect();
             }
         }
     }
@@ -97,10 +108,11 @@ class HootTransportHttpUrlConnection implements HootTransport {
         CHUNKED, FIXED
     };
 
-    private void setRequestData(HootRequest request) throws IOException {
+    private void setRequestData(HootRequest request,
+            HttpURLConnection connection) throws IOException {
         OutputStream os = null;
         try {
-            os = new BufferedOutputStream(mConnection.getOutputStream());
+            os = new BufferedOutputStream(connection.getOutputStream());
             IOUtils.copy(request.getData(), os);
         } finally {
             if (os != null) {
@@ -114,46 +126,48 @@ class HootTransportHttpUrlConnection implements HootTransport {
         }
     }
 
-    private void setRequestHeaders(HootRequest request) {
+    private void setRequestHeaders(HootRequest request,
+            HttpURLConnection connection) {
         if (request.getHeaders() != null) {
             Iterator<Object> iter = request.getHeaders().keySet().iterator();
             while (iter.hasNext()) {
                 String name = (String) iter.next();
-                mConnection.addRequestProperty(name, request.getHeaders()
+                connection.addRequestProperty(name, request.getHeaders()
                         .getProperty(name));
             }
         }
 
         if (request.getHoot().isBasicAuth()) {
-            mConnection.addRequestProperty("Authorization", request.getHoot()
+            connection.addRequestProperty("Authorization", request.getHoot()
                     .calculateBasicAuthHeader());
         }
     }
 
-    private void setRequestMethod(HootRequest request) throws ProtocolException {
+    private void setRequestMethod(HootRequest request,
+            HttpURLConnection connection) throws ProtocolException {
         switch (request.getOperation()) {
             case DELETE:
-                mConnection.setRequestMethod("DELETE");
-                mConnection.setDoOutput(true);
+                connection.setRequestMethod("DELETE");
+                connection.setDoOutput(true);
                 break;
             case POST:
-                mConnection.setRequestMethod("POST");
-                mConnection.setDoOutput(true);
+                connection.setRequestMethod("POST");
+                connection.setDoOutput(true);
                 break;
             case PUT:
-                mConnection.setRequestMethod("PUT");
-                mConnection.setDoOutput(true);
+                connection.setRequestMethod("PUT");
+                connection.setDoOutput(true);
                 break;
             case HEAD:
-                mConnection.setRequestMethod("HEAD");
+                connection.setRequestMethod("HEAD");
                 break;
             default:
-                mConnection.setRequestMethod("GET");
+                connection.setRequestMethod("GET");
                 break;
         }
 
         if (mStreamingMode == StreamingMode.CHUNKED) {
-            mConnection.setChunkedStreamingMode(0);
+            connection.setChunkedStreamingMode(0);
         }
 
         if (request.getOperation() == HootRequest.Operation.PATCH) {
@@ -163,8 +177,7 @@ class HootTransportHttpUrlConnection implements HootTransport {
         // TODO handle other OP types
     }
 
-    private HttpURLConnection mConnection;
-    volatile private boolean mCancelled = false;
+    private Map<HootRequest, HttpURLConnection> mConnectionMap = new HashMap<HootRequest, HttpURLConnection>();
 
     private static final String TAG = HootTransportHttpUrlConnection.class
             .getSimpleName();

@@ -24,8 +24,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.http.Header;
@@ -63,81 +61,85 @@ class HootTransportHttpClient implements HootTransport {
             .getSimpleName();
 
     @Override
-    public void synchronousExecute(HootRequest request) {
-        lock.lock();
-        if (sClient == null) {
-            HttpParams params = new BasicHttpParams();
-            ConnManagerParams.setMaxTotalConnections(params, 10);
-            ConnManagerParams.setTimeout(params, 2000);
-            HttpProtocolParams.setVersion(params, HttpVersion.HTTP_1_1);
-            HttpConnectionParams.setConnectionTimeout(params, 15000);
-            HttpConnectionParams.setSoTimeout(params, 15000);
-            HttpConnectionParams.setTcpNoDelay(params, true);
+    public void setup(Hoot hoot) {
+        HttpParams params = new BasicHttpParams();
+        ConnManagerParams.setMaxTotalConnections(params, 10);
+        ConnManagerParams.setTimeout(params, 2000);
+        HttpProtocolParams.setVersion(params, HttpVersion.HTTP_1_1);
+        HttpConnectionParams.setConnectionTimeout(params, 15000);
+        HttpConnectionParams.setSoTimeout(params, 15000);
+        HttpConnectionParams.setTcpNoDelay(params, true);
 
-            SchemeRegistry schemeRegistry = new SchemeRegistry();
-            schemeRegistry.register(new Scheme("http", PlainSocketFactory
-                    .getSocketFactory(), 80));
-            schemeRegistry.register(new Scheme("https", SSLSocketFactory
-                    .getSocketFactory(), 443));
+        SchemeRegistry schemeRegistry = new SchemeRegistry();
+        schemeRegistry.register(new Scheme("http", PlainSocketFactory
+                .getSocketFactory(), 80));
+        schemeRegistry.register(new Scheme("https", SSLSocketFactory
+                .getSocketFactory(), 443));
 
-            ClientConnectionManager cm = new ThreadSafeClientConnManager(
-                    params, schemeRegistry);
-            sClient = new DefaultHttpClient(cm, params);
-            if (request.getHoot().isBasicAuth()) {
-                sClient.getCredentialsProvider().setCredentials(
-                        AuthScope.ANY,
-                        new UsernamePasswordCredentials(request.getHoot()
-                                .getBasicAuthUsername(), request.getHoot()
-                                .getBasicAuthPassword()));
-            }
+        ClientConnectionManager cm = new ThreadSafeClientConnManager(params,
+                schemeRegistry);
+        mClient = new DefaultHttpClient(cm, params);
+        if (hoot.isBasicAuth()) {
+            mClient.getCredentialsProvider().setCredentials(
+                    AuthScope.ANY,
+                    new UsernamePasswordCredentials(
+                            hoot.getBasicAuthUsername(), hoot
+                                    .getBasicAuthPassword()));
         }
-        lock.unlock();
+    }
 
-        mRequestBase = null;
+    @Override
+    public HootResult synchronousExecute(HootRequest request) {
+
+        HttpRequestBase requestBase = null;
         HootResult result = request.getResult();
         try {
             String uri = request.buildUri().toString();
             switch (request.getOperation()) {
                 case DELETE:
-                    mRequestBase = new HttpDelete(uri);
+                    requestBase = new HttpDelete(uri);
                     break;
                 case GET:
-                    mRequestBase = new HttpGet(uri);
+                    requestBase = new HttpGet(uri);
                     break;
                 case PUT:
                     HttpPut put = new HttpPut(uri);
                     put.setEntity(getEntity(request.getData()));
-                    mRequestBase = put;
+                    requestBase = put;
                     break;
                 case POST:
                     HttpPost post = new HttpPost(uri);
                     post.setEntity(getEntity(request.getData()));
-                    mRequestBase = post;
+                    requestBase = post;
                     break;
                 case HEAD:
-                    mRequestBase = new HttpHead(uri);
+                    requestBase = new HttpHead(uri);
                     break;
             }
         } catch (UnsupportedEncodingException e1) {
             result.setException(e1);
             e1.printStackTrace();
-            return;
+            return result;
         } catch (IOException e) {
             result.setException(e);
             e.printStackTrace();
-            return;
+            return result;
+        }
+
+        synchronized (mRequestBaseMap) {
+            mRequestBaseMap.put(request, requestBase);
         }
         if (request.getHeaders() != null && request.getHeaders().size() > 0) {
             for (Object propertyKey : request.getHeaders().keySet()) {
-                mRequestBase.addHeader((String) propertyKey, (String) request
+                requestBase.addHeader((String) propertyKey, (String) request
                         .getHeaders().get(propertyKey));
             }
         }
 
         InputStream is = null;
         try {
-            Log.v(TAG, "URI: [" + mRequestBase.getURI().toString() + "]");
-            HttpResponse response = sClient.execute(mRequestBase);
+            Log.v(TAG, "URI: [" + requestBase.getURI().toString() + "]");
+            HttpResponse response = mClient.execute(requestBase);
 
             if (response != null) {
                 result.setResponseCode(response.getStatusLine().getStatusCode());
@@ -160,17 +162,19 @@ class HootTransportHttpClient implements HootTransport {
             e.printStackTrace();
             result.setException(e);
         } finally {
-            mRequestBase = null;
+            requestBase = null;
+            synchronized (mRequestBaseMap) {
+                mRequestBaseMap.remove(request);
+            }
             if (is != null) {
                 try {
                     is.close();
                 } catch (IOException e) {
-                    // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
             }
         }
-        return;
+        return result;
     }
 
     private HttpEntity getEntity(InputStream data)
@@ -180,17 +184,19 @@ class HootTransportHttpClient implements HootTransport {
     }
 
     @Override
-    public void cancel() {
-        if (mRequestBase != null) {
-            mRequestBase.abort();
+    public void cancel(HootRequest request) {
+        synchronized (mRequestBaseMap) {
+            HttpRequestBase requestBase = mRequestBaseMap.get(request);
+            if (requestBase != null) {
+                requestBase.abort();
+            }
         }
     }
 
     // -------------------------------------------------------------------------
     // END OF PUBLIC INTERFACE
     // -------------------------------------------------------------------------
-    private static DefaultHttpClient sClient = null;
-    private static final Lock lock = new ReentrantLock();
-    private HttpRequestBase mRequestBase;
+    private DefaultHttpClient mClient;
+    private Map<HootRequest, HttpRequestBase> mRequestBaseMap = new HashMap<HootRequest, HttpRequestBase>();
 
 }
