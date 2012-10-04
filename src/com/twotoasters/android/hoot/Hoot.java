@@ -26,9 +26,8 @@ public class Hoot {
         return new Hoot(baseUrl);
     }
 
-    public <T> HootRequest<T> createRequest(HootRequestListener<T> listener,
-            Class<T> clazz) {
-        return new HootRequest<T>(this, listener, clazz);
+    public <T> HootRequest<T> createRequest(HootRequestListener<T> listener) {
+        return new HootRequest<T>(this, listener);
     }
 
     public void setBasicAuth(String username, String password) {

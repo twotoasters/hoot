@@ -118,7 +118,7 @@ public class HootActivityHelper {
             HootRequestListener<T> listener, Class<T> clazz) {
 
         HootRequest<T> request = kit.createRequest(
-                new HootActivityHelperRequestListener<T>(listener), clazz);
+                new HootActivityHelperRequestListener<T>(listener));
         mRequests.add(request);
         return request;
     }
