@@ -21,6 +21,7 @@ import java.util.concurrent.TimeoutException;
 
 import com.jayway.android.robotium.solo.Solo;
 import com.twotoasters.android.hoottestapplication.HootTestActivity;
+import com.twotoasters.android.hoottestapplication.data.TestData;
 
 import de.akquinet.android.marvin.ActivityTestCase;
 import de.akquinet.android.marvin.matchers.Condition;
@@ -58,12 +59,13 @@ public class HootActivityTest extends ActivityTestCase<HootTestActivity> {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
+
         assertTrue(activity.mRequest != null
                 && activity.mRequest.getResult() != null
                 && activity.mRequest.getResult().isSuccess()
                 && activity.mRequest.getResult().getDeserializedResult() != null
-                && activity.mRequest.getResult().getDeserializedResult().test
-                        .equals("This is a test"));
+                && ((TestData) activity.mRequest.getResult()
+                        .getDeserializedResult()).test.equals("This is a test"));
     }
 
     public void testOnPauseOnResume() {
@@ -91,8 +93,8 @@ public class HootActivityTest extends ActivityTestCase<HootTestActivity> {
                 && activity.mRequest.getResult() != null
                 && activity.mRequest.getResult().isSuccess()
                 && activity.mRequest.getResult().getDeserializedResult() != null
-                && activity.mRequest.getResult().getDeserializedResult().test
-                        .equals("This is a test"));
+                && ((TestData) activity.mRequest.getResult()
+                        .getDeserializedResult()).test.equals("This is a test"));
     }
 
     public void testOnPauseCompleteOnResume() {
@@ -123,8 +125,8 @@ public class HootActivityTest extends ActivityTestCase<HootTestActivity> {
                 && activity.mRequest.getResult() != null
                 && activity.mRequest.getResult().isSuccess()
                 && activity.mRequest.getResult().getDeserializedResult() != null
-                && activity.mRequest.getResult().getDeserializedResult().test
-                        .equals("This is a test"));
+                && ((TestData) activity.mRequest.getResult()
+                        .getDeserializedResult()).test.equals("This is a test"));
     }
 
     private Solo mSolo = null;

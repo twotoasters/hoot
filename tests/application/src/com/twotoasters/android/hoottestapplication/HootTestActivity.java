@@ -35,7 +35,7 @@ import com.twotoasters.android.hoottestapplication.data.TestData;
 
 public class HootTestActivity extends HootBaseActivity {
 
-    public HootRequest<TestData> mRequest;
+    public HootRequest mRequest;
 
     /*
      * (non-Javadoc)
@@ -57,8 +57,8 @@ public class HootTestActivity extends HootBaseActivity {
             @Override
             public void onClick(View v) {
                 mRequest = createRequest(mHootRestClient,
-                        testDataRequestListener, TestData.class).get()
-                        .setDeserializer(testDataDeserializer);
+                        testDataRequestListener).get().setDeserializer(
+                        testDataDeserializer);
                 mRequest.execute();
             }
         });
@@ -68,23 +68,19 @@ public class HootTestActivity extends HootBaseActivity {
             @Override
             public void onClick(View v) {
                 mRequest = createRequest(mHootRestClient,
-                        testDataRequestListener, TestData.class).get()
-                        .setResource("wait")
+                        testDataRequestListener).get().setResource("wait")
                         .setDeserializer(testDataDeserializer);
                 mRequest.execute();
             }
         });
+
     }
 
-    @SuppressWarnings("unchecked")
     @Override
-    public boolean onRequestReconnect(HootRequest<?> request) {
-        if (request.getRequestClass() == TestData.class) {
-            mRequest = (HootRequest<TestData>) request;
-            connectToRequest(mRequest, testDataRequestListener);
-            return true;
-        }
-        return false;
+    public boolean onRequestReconnect(HootRequest request) {
+        mRequest = (HootRequest) request;
+        connectToRequest(mRequest, testDataRequestListener);
+        return true;
     }
 
     // -------------------------------------------------------------------------
@@ -93,32 +89,30 @@ public class HootTestActivity extends HootBaseActivity {
     private static final String TAG = HootTestActivity.class.getSimpleName();
     private Hoot mHootRestClient;
 
-    private HootRequestListener<TestData> testDataRequestListener = new HootRequestListener<TestData>() {
+    private HootRequestListener testDataRequestListener = new HootRequestListener() {
 
         @Override
-        public void onRequestStarted(HootRequest<TestData> request) {
+        public void onRequestStarted(HootRequest request) {
             Log.v(TAG, "onRequestStarted");
         }
 
         @Override
-        public void onSuccess(HootRequest<TestData> request,
-                HootResult<TestData> result) {
+        public void onSuccess(HootRequest request, HootResult result) {
             Log.v(TAG, "onSuccess");
         }
 
         @Override
-        public void onFailure(HootRequest<TestData> request,
-                HootResult<TestData> result) {
+        public void onFailure(HootRequest request, HootResult result) {
             Log.v(TAG, "onFailure");
         }
 
         @Override
-        public void onCancelled(HootRequest<TestData> request) {
+        public void onCancelled(HootRequest request) {
             Log.v(TAG, "onCancelled");
         }
 
         @Override
-        public void onRequestCompleted(HootRequest<TestData> request) {
+        public void onRequestCompleted(HootRequest request) {
             Log.v(TAG, "onRequestCompleted");
         }
     };

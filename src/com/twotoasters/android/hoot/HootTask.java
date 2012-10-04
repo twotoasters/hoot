@@ -19,23 +19,22 @@ package com.twotoasters.android.hoot;
 import android.os.AsyncTask;
 import android.os.Build;
 
-public class HootTask<T> extends
-        AsyncTask<HootRequest<T>, HootRequest<T>, HootRequest<T>> {
+public class HootTask extends AsyncTask<HootRequest, HootRequest, HootRequest> {
 
-    private HootTransport<T> mTransport = null;
+    private HootTransport mTransport = null;
 
     @Override
-    protected HootRequest<T> doInBackground(HootRequest<T>... params) {
-        HootRequest<T> request = params[0];
+    protected HootRequest doInBackground(HootRequest... params) {
+        HootRequest request = params[0];
 
         // let the UI thread get an update so we know we've started the request
         publishProgress(params);
 
         // create our transport
         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.FROYO) {
-            mTransport = new HootTransportHttpUrlConnection<T>();
+            mTransport = new HootTransportHttpUrlConnection();
         } else {
-            mTransport = new HootTransportHttpClient<T>();
+            mTransport = new HootTransportHttpClient();
         }
 
         do {
@@ -49,12 +48,12 @@ public class HootTask<T> extends
     }
 
     @Override
-    protected void onPostExecute(HootRequest<T> request) {
+    protected void onPostExecute(HootRequest request) {
         mTransport = null;
         if (request != null && request.getListener() != null
                 && request.getResult() != null) {
             request.getListener().onRequestCompleted(request);
-            HootResult<T> result = request.getResult();
+            HootResult result = request.getResult();
             request.setComplete(true);
             if (result.isSuccess()) {
                 request.getListener().onSuccess(request, result);
@@ -65,8 +64,8 @@ public class HootTask<T> extends
     }
 
     @Override
-    protected void onProgressUpdate(HootRequest<T>... values) {
-        HootRequest<T> request = values[0];
+    protected void onProgressUpdate(HootRequest... values) {
+        HootRequest request = values[0];
 
         if (request != null && request.getListener() != null) {
             request.getListener().onRequestStarted(request);

@@ -18,17 +18,17 @@ package com.twotoasters.android.hoot;
 
 import java.io.InputStream;
 
-public abstract class HootDeserializer<U> {
+public abstract class HootDeserializer<T> {
 
     public HootDeserializer(boolean isStreamDeserializer) {
         mIsStreamDeserializer = isStreamDeserializer;
     }
 
-    public U deserialize(String string) {
+    public T deserialize(String string) {
         return null;
     }
 
-    public U deserialize(InputStream stream) {
+    public T deserialize(InputStream stream) {
         return null;
     }
 
@@ -36,6 +36,22 @@ public abstract class HootDeserializer<U> {
         return mIsStreamDeserializer;
     }
 
+    // -------------------------------------------------------------------------
+    // End of public interface
+    // -------------------------------------------------------------------------
+    private T mDeserializedStorage;
     private boolean mIsStreamDeserializer;
+
+    public T getDeserializedResult() {
+        return mDeserializedStorage;
+    }
+
+    void performDeserialize(InputStream responseStream) {
+        mDeserializedStorage = deserialize(responseStream);
+    }
+
+    void performDeserialize(String responseString) {
+        mDeserializedStorage = deserialize(responseString);
+    }
 
 }

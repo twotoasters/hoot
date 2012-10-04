@@ -15,6 +15,7 @@
  */
 
 package com.twotoasters.android.hoot;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
@@ -28,11 +29,10 @@ import org.apache.commons.io.IOUtils;
 
 import android.util.Log;
 
-
-class HootTransportHttpUrlConnection<T> implements HootTransport<T> {
+class HootTransportHttpUrlConnection implements HootTransport {
 
     @Override
-    public void synchronousExecute(HootRequest<T> request) {
+    public void synchronousExecute(HootRequest request) {
         if (mCancelled) {
             return;
         }
@@ -52,7 +52,7 @@ class HootTransportHttpUrlConnection<T> implements HootTransport<T> {
             if (request.getData() != null) {
                 setRequestData(request);
             }
-            HootResult<T> hootResult = request.getResult();
+            HootResult hootResult = request.getResult();
             hootResult.setResponseCode(mConnection.getResponseCode());
             Log.d(TAG,
                     " - received response code ["
@@ -61,7 +61,7 @@ class HootTransportHttpUrlConnection<T> implements HootTransport<T> {
                 hootResult.setHeaders(mConnection.getHeaderFields());
                 hootResult.setResponseStream(new BufferedInputStream(
                         mConnection.getInputStream()));
-                request.deserializeResult();
+                hootResult.deserializeResult();
             } else {
                 hootResult.setResponseStream(new BufferedInputStream(
                         mConnection.getErrorStream()));
@@ -97,7 +97,7 @@ class HootTransportHttpUrlConnection<T> implements HootTransport<T> {
         CHUNKED, FIXED
     };
 
-    private void setRequestData(HootRequest<T> request) throws IOException {
+    private void setRequestData(HootRequest request) throws IOException {
         OutputStream os = null;
         try {
             os = new BufferedOutputStream(mConnection.getOutputStream());
@@ -114,7 +114,7 @@ class HootTransportHttpUrlConnection<T> implements HootTransport<T> {
         }
     }
 
-    private void setRequestHeaders(HootRequest<T> request) {
+    private void setRequestHeaders(HootRequest request) {
         if (request.getHeaders() != null) {
             Iterator<Object> iter = request.getHeaders().keySet().iterator();
             while (iter.hasNext()) {
@@ -130,8 +130,7 @@ class HootTransportHttpUrlConnection<T> implements HootTransport<T> {
         }
     }
 
-    private void setRequestMethod(HootRequest<T> request)
-            throws ProtocolException {
+    private void setRequestMethod(HootRequest request) throws ProtocolException {
         switch (request.getOperation()) {
             case DELETE:
                 mConnection.setRequestMethod("DELETE");

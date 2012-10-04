@@ -32,7 +32,7 @@ import com.twotoasters.android.hoot.HootResult;
 public class HootActivityHelper {
 
     public interface OnHootRequestReconnect {
-        public boolean onRequestReconnect(HootRequest<?> request);
+        public boolean onRequestReconnect(HootRequest request);
     }
 
     @SuppressWarnings("unchecked")
@@ -42,19 +42,18 @@ public class HootActivityHelper {
         mRetainedInstanceMap = (Map<String, Object>) getLastNonConfigurationInstanceFromActivity(activity);
         if (mRetainedInstanceMap == null) {
             mRetainedInstanceMap = new HashMap<String, Object>();
-            mRequests = new ArrayList<HootRequest<?>>();
+            mRequests = new ArrayList<HootRequest>();
         } else {
-            mRequests = (List<HootRequest<?>>) mRetainedInstanceMap
-                    .get(REQUESTS);
+            mRequests = (List<HootRequest>) mRetainedInstanceMap.get(REQUESTS);
         }
     }
 
-    public <T> HootRequest<T> connectToRequest(HootRequest<T> request,
-            HootRequestListener<T> listener) {
+    public HootRequest connectToRequest(HootRequest request,
+            HootRequestListener listener) {
         if (!mRequests.contains(request)) {
             mRequests.add(request);
         }
-        request.bindListener(new HootActivityHelperRequestListener<T>(listener));
+        request.bindListener(new HootActivityHelperRequestListener(listener));
         return request;
     }
 
@@ -68,9 +67,9 @@ public class HootActivityHelper {
     }
 
     public void detachAll(boolean cancel) {
-        for (HootRequest<?> request : mRequests) {
+        for (HootRequest request : mRequests) {
             if (request.getListener() instanceof HootActivityHelperRequestListener) {
-                HootActivityHelperRequestListener<?> listener = (HootActivityHelperRequestListener<?>) request
+                HootActivityHelperRequestListener listener = (HootActivityHelperRequestListener) request
                         .getListener();
                 listener.detach();
             }
@@ -80,16 +79,15 @@ public class HootActivityHelper {
 
     public void reattachAll() {
         if (mHootRequestReconnectListener != null) {
-            List<HootRequest<?>> toAttach = new ArrayList<HootRequest<?>>(
-                    mRequests);
-            List<HootRequest<?>> toRemove = new ArrayList<HootRequest<?>>();
-            for (HootRequest<?> request : toAttach) {
+            List<HootRequest> toAttach = new ArrayList<HootRequest>(mRequests);
+            List<HootRequest> toRemove = new ArrayList<HootRequest>();
+            for (HootRequest request : toAttach) {
                 if (!mHootRequestReconnectListener.onRequestReconnect(request)) {
                     toRemove.add(request);
                 }
             }
 
-            for (HootRequest<?> request : toRemove) {
+            for (HootRequest request : toRemove) {
                 mRequests.remove(request);
             }
         }
@@ -114,11 +112,10 @@ public class HootActivityHelper {
         return mRetainedInstanceMap.get(key);
     }
 
-    public <T> HootRequest<T> createRequest(Hoot kit,
-            HootRequestListener<T> listener, Class<T> clazz) {
+    public HootRequest createRequest(Hoot kit, HootRequestListener listener) {
 
-        HootRequest<T> request = kit.createRequest(
-                new HootActivityHelperRequestListener<T>(listener), clazz);
+        HootRequest request = kit
+                .createRequest(new HootActivityHelperRequestListener(listener));
         mRequests.add(request);
         return request;
     }
@@ -128,7 +125,7 @@ public class HootActivityHelper {
     // -------------------------------------------------------------------------
     private static final String REQUESTS = "@!(R)!@";
     private OnHootRequestReconnect mHootRequestReconnectListener;
-    private List<HootRequest<?>> mRequests;
+    private List<HootRequest> mRequests;
     private Map<String, Object> mRetainedInstanceMap;
 
     private Object getLastNonConfigurationInstanceFromActivity(Activity activity) {
@@ -140,11 +137,11 @@ public class HootActivityHelper {
         }
     }
 
-    private class HootActivityHelperRequestListener<T> implements
-            HootRequestListener<T> {
-        HootRequestListener<T> _listener = null;
+    private class HootActivityHelperRequestListener implements
+            HootRequestListener {
+        HootRequestListener _listener = null;
 
-        public HootActivityHelperRequestListener(HootRequestListener<T> listener) {
+        public HootActivityHelperRequestListener(HootRequestListener listener) {
             _listener = listener;
         }
 
@@ -153,14 +150,14 @@ public class HootActivityHelper {
         }
 
         @Override
-        public void onRequestStarted(HootRequest<T> request) {
+        public void onRequestStarted(HootRequest request) {
             if (_listener != null) {
                 _listener.onRequestStarted(request);
             }
         }
 
         @Override
-        public void onRequestCompleted(HootRequest<T> request) {
+        public void onRequestCompleted(HootRequest request) {
             if (_listener != null) {
                 _listener.onRequestCompleted(request);
             }
@@ -168,21 +165,21 @@ public class HootActivityHelper {
         }
 
         @Override
-        public void onSuccess(HootRequest<T> request, HootResult<T> result) {
+        public void onSuccess(HootRequest request, HootResult result) {
             if (_listener != null) {
                 _listener.onSuccess(request, result);
             }
         }
 
         @Override
-        public void onFailure(HootRequest<T> request, HootResult<T> result) {
+        public void onFailure(HootRequest request, HootResult result) {
             if (_listener != null) {
                 _listener.onFailure(request, result);
             }
         }
 
         @Override
-        public void onCancelled(HootRequest<T> request) {
+        public void onCancelled(HootRequest request) {
             if (_listener != null) {
                 _listener.onCancelled(request);
             }
@@ -190,7 +187,7 @@ public class HootActivityHelper {
 
     }
 
-    private void requestFinished(HootRequest<?> request) {
+    private void requestFinished(HootRequest request) {
         mRequests.remove(request);
     }
 

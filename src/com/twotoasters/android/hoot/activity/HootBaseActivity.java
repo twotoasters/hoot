@@ -141,9 +141,9 @@ public abstract class HootBaseActivity extends Activity implements
      *            the class of the object expected (null if void).
      * @return the request
      */
-    protected <T> HootRequest<T> createRequest(Hoot kit,
-            HootRequestListener<T> listener, Class<T> clazz) {
-        return mHootActivityHelper.createRequest(kit, listener, clazz);
+    protected <T> HootRequest createRequest(Hoot kit,
+            HootRequestListener listener) {
+        return mHootActivityHelper.createRequest(kit, listener);
     }
 
     /**
@@ -157,8 +157,8 @@ public abstract class HootBaseActivity extends Activity implements
      *            the listener to call
      * @return the request
      */
-    public <T> HootRequest<T> connectToRequest(HootRequest<T> request,
-            HootRequestListener<T> listener) {
+    public HootRequest connectToRequest(HootRequest request,
+            HootRequestListener listener) {
         return mHootActivityHelper.connectToRequest(request, listener);
     }
 

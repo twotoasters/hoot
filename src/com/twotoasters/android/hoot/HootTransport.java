@@ -16,9 +16,9 @@
 
 package com.twotoasters.android.hoot;
 
-interface HootTransport<T> {
+interface HootTransport {
 
-    public void synchronousExecute(HootRequest<T> request);
+    public void synchronousExecute(HootRequest request);
 
     public void cancel();
 

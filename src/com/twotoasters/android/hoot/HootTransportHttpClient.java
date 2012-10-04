@@ -57,13 +57,13 @@ import org.apache.http.protocol.HTTP;
 
 import android.util.Log;
 
-class HootTransportHttpClient<T> implements HootTransport<T> {
+class HootTransportHttpClient implements HootTransport {
 
     private static final String TAG = HootTransportHttpClient.class
             .getSimpleName();
 
     @Override
-    public void synchronousExecute(HootRequest<T> request) {
+    public void synchronousExecute(HootRequest request) {
         lock.lock();
         if (sClient == null) {
             HttpParams params = new BasicHttpParams();
@@ -94,7 +94,7 @@ class HootTransportHttpClient<T> implements HootTransport<T> {
         lock.unlock();
 
         mRequestBase = null;
-        HootResult<T> result = request.getResult();
+        HootResult result = request.getResult();
         try {
             String uri = request.buildUri().toString();
             switch (request.getOperation()) {
@@ -152,7 +152,7 @@ class HootTransportHttpClient<T> implements HootTransport<T> {
                 if (entity != null) {
                     is = entity.getContent();
                     result.setResponseStream(new BufferedInputStream(is));
-                    request.deserializeResult();
+                    result.deserializeResult();
                 }
             }
 

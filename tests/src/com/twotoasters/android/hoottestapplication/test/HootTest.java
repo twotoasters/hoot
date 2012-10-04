@@ -62,10 +62,11 @@ public class HootTest extends InstrumentationTestCase {
 
     public void testGet() {
         final CountDownLatch latch = new CountDownLatch(1);
-        final HootRequest<Get> request = mHootRestClient
-                .createRequest(new TestHootListener<Get>(latch, true),
-                        Get.class).get()
-                .setDeserializer(new TestHootDeserializer<Get>(Get.class));
+        final HootDeserializer<Get> deserializer = new TestHootDeserializer<Get>(
+                Get.class);
+        final HootRequest request = mHootRestClient
+                .createRequest(new TestHootListener(latch, true)).get()
+                .setDeserializer(deserializer);
 
         assertNotNull(request);
 
@@ -74,7 +75,7 @@ public class HootTest extends InstrumentationTestCase {
         assertTrue(request.getResult() != null
                 && request.getResult().isSuccess()
                 && request.getResult().getDeserializedResult() != null
-                && request.getResult().getDeserializedResult().test
+                && deserializer.getDeserializedResult().test
                         .equals("This is a test"));
     }
 
@@ -83,16 +84,12 @@ public class HootTest extends InstrumentationTestCase {
         Map<String, String> params = new LinkedHashMap<String, String>();
         params.put("this", "that");
         params.put("here", "there");
-        final HootRequest<GetWithParams> request = mHootRestClient
-                .createRequest(
-                        new TestHootListener<GetWithParams>(latch, true),
-                        GetWithParams.class)
-                .get()
-                .setResource("params")
-                .setQueryParameters(params)
-                .setDeserializer(
-                        new TestHootDeserializer<GetWithParams>(
-                                GetWithParams.class));
+        final HootDeserializer<GetWithParams> deserializer = new TestHootDeserializer<GetWithParams>(
+                GetWithParams.class);
+        final HootRequest request = mHootRestClient
+                .createRequest(new TestHootListener(latch, true)).get()
+                .setResource("params").setQueryParameters(params)
+                .setDeserializer(deserializer);
 
         assertNotNull(request);
 
@@ -100,10 +97,11 @@ public class HootTest extends InstrumentationTestCase {
 
         assertTrue(request.getResult() != null
                 && request.getResult().isSuccess()
-                && request.getResult().getDeserializedResult() != null
-                && request.getResult().getDeserializedResult().thisString
-                        .equals("that")
-                && request.getResult().getDeserializedResult().hereString
+                && request.getResult().getDeserializedResult() != null);
+
+        assertTrue(deserializer.getDeserializedResult().thisString
+                .equals("that")
+                && deserializer.getDeserializedResult().hereString
                         .equals("there"));
     }
 
@@ -111,16 +109,12 @@ public class HootTest extends InstrumentationTestCase {
         final CountDownLatch latch = new CountDownLatch(1);
         Properties headers = new Properties();
         headers.put("HOOT_TEST_HEADER", "header");
-        final HootRequest<GetWithHeaders> request = mHootRestClient
-                .createRequest(
-                        new TestHootListener<GetWithHeaders>(latch, true),
-                        GetWithHeaders.class)
-                .get()
-                .setResource("headers")
-                .setHeaders(headers)
-                .setDeserializer(
-                        new TestHootDeserializer<GetWithHeaders>(
-                                GetWithHeaders.class));
+        final HootDeserializer<GetWithHeaders> deserializer = new TestHootDeserializer<GetWithHeaders>(
+                GetWithHeaders.class);
+        final HootRequest request = mHootRestClient
+                .createRequest(new TestHootListener(latch, true)).get()
+                .setResource("headers").setHeaders(headers)
+                .setDeserializer(deserializer);
 
         assertNotNull(request);
 
@@ -129,7 +123,7 @@ public class HootTest extends InstrumentationTestCase {
         assertTrue(request.getResult() != null
                 && request.getResult().isSuccess()
                 && request.getResult().getDeserializedResult() != null
-                && request.getResult().getDeserializedResult().headers
+                && deserializer.getDeserializedResult().headers
                         .equals("header"));
 
     }
@@ -141,17 +135,12 @@ public class HootTest extends InstrumentationTestCase {
         Map<String, String> params = new LinkedHashMap<String, String>();
         params.put("this", "that");
         params.put("here", "there");
-        final HootRequest<GetWithHeadersAndParams> request = mHootRestClient
-                .createRequest(
-                        new TestHootListener<GetWithHeadersAndParams>(latch,
-                                true), GetWithHeadersAndParams.class)
-                .get()
-                .setResource("headers.and.params")
-                .setHeaders(headers)
-                .setQueryParameters(params)
-                .setDeserializer(
-                        new TestHootDeserializer<GetWithHeadersAndParams>(
-                                GetWithHeadersAndParams.class));
+        HootDeserializer<GetWithHeadersAndParams> deserializer = new TestHootDeserializer<GetWithHeadersAndParams>(
+                GetWithHeadersAndParams.class);
+        final HootRequest request = mHootRestClient
+                .createRequest(new TestHootListener(latch, true)).get()
+                .setResource("headers.and.params").setHeaders(headers)
+                .setQueryParameters(params).setDeserializer(deserializer);
 
         assertNotNull(request);
 
@@ -159,21 +148,21 @@ public class HootTest extends InstrumentationTestCase {
 
         assertTrue(request.getResult() != null
                 && request.getResult().isSuccess()
-                && request.getResult().getDeserializedResult() != null
-                && request.getResult().getDeserializedResult().headers
-                        .equals("header")
-                && request.getResult().getDeserializedResult().params.thisString
+                && request.getResult().getDeserializedResult() != null);
+
+        assertTrue(deserializer.getDeserializedResult().headers
+                .equals("header")
+                && deserializer.getDeserializedResult().params.thisString
                         .equals("that")
-                && request.getResult().getDeserializedResult().params.hereString
+                && deserializer.getDeserializedResult().params.hereString
                         .equals("there"));
     }
 
     public void testGetFailure404() {
         final CountDownLatch latch = new CountDownLatch(1);
-        final HootRequest<Get> request = mHootRestClient
-                .createRequest(new TestHootListener<Get>(latch, true),
-                        Get.class).get().setResource("error/404")
-                .setDeserializer(new TestHootDeserializer<Get>(Get.class));
+        final HootRequest request = mHootRestClient
+                .createRequest(new TestHootListener(latch, true)).get()
+                .setResource("error/404");
 
         assertNotNull(request);
 
@@ -188,9 +177,9 @@ public class HootTest extends InstrumentationTestCase {
         final CountDownLatch latch = new CountDownLatch(1);
         final List<Integer> successfulResults = new ArrayList<Integer>();
         successfulResults.add(HttpURLConnection.HTTP_NOT_MODIFIED);
-        final HootRequest<Void> request = mHootRestClient
-                .createRequest(new TestHootListener<Void>(latch, false), null)
-                .get().setResource("error/304")
+        final HootRequest request = mHootRestClient
+                .createRequest(new TestHootListener(latch, false)).get()
+                .setResource("error/304")
                 .setSuccessfulResponseCodes(successfulResults);
 
         assertNotNull(request);
@@ -206,10 +195,11 @@ public class HootTest extends InstrumentationTestCase {
         final CountDownLatch latch = new CountDownLatch(1);
         InputStream is = new ByteArrayInputStream(
                 new String("this is a post").getBytes());
-        final HootRequest<Post> request = mHootRestClient
-                .createRequest(new TestHootListener<Post>(latch, true),
-                        Post.class).post(is)
-                .setDeserializer(new TestHootDeserializer<Post>(Post.class));
+        final HootDeserializer<Post> deserializer = new TestHootDeserializer<Post>(
+                Post.class);
+        final HootRequest request = mHootRestClient
+                .createRequest(new TestHootListener(latch, true)).post(is)
+                .setDeserializer(deserializer);
 
         assertNotNull(request);
 
@@ -217,9 +207,10 @@ public class HootTest extends InstrumentationTestCase {
 
         assertTrue(request.getResult() != null
                 && request.getResult().isSuccess()
-                && request.getResult().getDeserializedResult() != null
-                && request.getResult().getDeserializedResult().post
-                        .equals("this is a post"));
+                && request.getResult().getDeserializedResult() != null);
+
+        assertTrue(deserializer.getDeserializedResult().post
+                .equals("this is a post"));
     }
 
     public void testPostWithHeaders() {
@@ -228,16 +219,12 @@ public class HootTest extends InstrumentationTestCase {
         headers.put("HOOT_TEST_HEADER", "some header");
         InputStream is = new ByteArrayInputStream(
                 new String("this is a post").getBytes());
-        final HootRequest<PostWithHeaders> request = mHootRestClient
-                .createRequest(
-                        new TestHootListener<PostWithHeaders>(latch, true),
-                        PostWithHeaders.class)
-                .post(is)
-                .setResource("headers")
-                .setHeaders(headers)
-                .setDeserializer(
-                        new TestHootDeserializer<PostWithHeaders>(
-                                PostWithHeaders.class));
+        final HootDeserializer<PostWithHeaders> deserializer = new TestHootDeserializer<PostWithHeaders>(
+                PostWithHeaders.class);
+        final HootRequest request = mHootRestClient
+                .createRequest(new TestHootListener(latch, true)).post(is)
+                .setResource("headers").setHeaders(headers)
+                .setDeserializer(deserializer);
 
         assertNotNull(request);
 
@@ -245,18 +232,17 @@ public class HootTest extends InstrumentationTestCase {
 
         assertTrue(request.getResult() != null
                 && request.getResult().isSuccess()
-                && request.getResult().getDeserializedResult() != null
-                && request.getResult().getDeserializedResult().headers
-                        .equals("some header")
-                && request.getResult().getDeserializedResult().post
+                && request.getResult().getDeserializedResult() != null);
+        assertTrue(deserializer.getDeserializedResult().headers
+                .equals("some header")
+                && deserializer.getDeserializedResult().post
                         .equals("this is a post"));
     }
 
     // -------------------------------------------------------------------------
     // Helpers
     // -------------------------------------------------------------------------
-    private <T> void executeTest(final HootRequest<T> request,
-            CountDownLatch latch) {
+    private <T> void executeTest(final HootRequest request, CountDownLatch latch) {
         try {
             runTestOnUiThread(new Runnable() {
 
@@ -276,7 +262,7 @@ public class HootTest extends InstrumentationTestCase {
         }
     }
 
-    private class TestHootListener<T> implements HootRequestListener<T> {
+    private class TestHootListener implements HootRequestListener {
         CountDownLatch mLatch = null;
         boolean mShouldHaveDeserializedResult;
 
@@ -287,12 +273,12 @@ public class HootTest extends InstrumentationTestCase {
         }
 
         @Override
-        public void onRequestStarted(HootRequest<T> request) {
+        public void onRequestStarted(HootRequest request) {
             Log.v(TAG, "onRequestStarted");
         }
 
         @Override
-        public void onSuccess(HootRequest<T> request, HootResult<T> result) {
+        public void onSuccess(HootRequest request, HootResult result) {
             Log.v(TAG, "onSuccess");
             if (mShouldHaveDeserializedResult) {
                 assertNotNull(result.getDeserializedResult());
@@ -301,19 +287,19 @@ public class HootTest extends InstrumentationTestCase {
         }
 
         @Override
-        public void onFailure(HootRequest<T> request, HootResult<T> result) {
+        public void onFailure(HootRequest request, HootResult result) {
             Log.v(TAG, "onFailure");
             mLatch.countDown();
         }
 
         @Override
-        public void onCancelled(HootRequest<T> request) {
+        public void onCancelled(HootRequest request) {
             Log.v(TAG, "onCancelled");
             mLatch.countDown();
         }
 
         @Override
-        public void onRequestCompleted(HootRequest<T> request) {
+        public void onRequestCompleted(HootRequest request) {
             Log.v(TAG, "onRequestCompleted");
         }
     }

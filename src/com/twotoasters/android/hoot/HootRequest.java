@@ -17,7 +17,6 @@
 package com.twotoasters.android.hoot;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.Iterator;
@@ -26,11 +25,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 
-import org.apache.commons.io.IOUtils;
-
 import android.net.Uri;
 
-public class HootRequest<T> {
+public class HootRequest {
 
     /**
      * The interface for request listeners to implement to be notified of events
@@ -42,14 +39,14 @@ public class HootRequest<T> {
      * @param <T>
      *            the type of object expected from the request
      */
-    public interface HootRequestListener<T> {
+    public interface HootRequestListener {
         /**
          * Called when the request is actually being transmitted.
          * 
          * @param request
          *            the request
          */
-        public void onRequestStarted(HootRequest<T> request);
+        public void onRequestStarted(HootRequest request);
 
         /**
          * Called when the request has been transmitted and any response
@@ -59,7 +56,7 @@ public class HootRequest<T> {
          * @param request
          *            the request... again.
          */
-        public void onRequestCompleted(HootRequest<T> request);
+        public void onRequestCompleted(HootRequest request);
 
         /**
          * Called once the request is complete and the result code indicates a
@@ -68,7 +65,7 @@ public class HootRequest<T> {
          * @param request
          * @param result
          */
-        public void onSuccess(HootRequest<T> request, HootResult<T> result);
+        public void onSuccess(HootRequest request, HootResult result);
 
         /**
          * Called once the request is complete and the result code indicates an
@@ -77,7 +74,7 @@ public class HootRequest<T> {
          * @param request
          * @param result
          */
-        public void onFailure(HootRequest<T> request, HootResult<T> result);
+        public void onFailure(HootRequest request, HootResult result);
 
         /**
          * Called once the request is complete and the result code indicates a
@@ -86,18 +83,14 @@ public class HootRequest<T> {
          * @param request
          * @param result
          */
-        public void onCancelled(HootRequest<T> request);
+        public void onCancelled(HootRequest request);
     }
 
     /**
      * @return the result
      */
-    public HootResult<T> getResult() {
+    public HootResult getResult() {
         return mResult;
-    }
-
-    public Class<T> getRequestClass() {
-        return mClazz;
     }
 
     public Object getTag() {
@@ -108,96 +101,95 @@ public class HootRequest<T> {
         return mComplete;
     }
 
-    public HootRequest<T> setResource(String resource) {
+    public HootRequest setResource(String resource) {
         mResource = resource;
         return this;
     }
 
-    public HootRequest<T> setDeserializer(HootDeserializer<T> deserializer) {
-        mDeserializer = deserializer;
+    public <T> HootRequest setDeserializer(HootDeserializer<T> deserializer) {
+        mResult.setDeserializer(deserializer);
         return this;
     }
 
-    public HootRequest<T> get() {
+    public HootRequest get() {
         mOperation = Operation.GET;
         return this;
     }
 
-    public HootRequest<T> post(InputStream postData) {
+    public HootRequest post(InputStream postData) {
         mOperation = Operation.POST;
         mData = postData;
         return this;
     }
 
-    public HootRequest<T> post(String string, String encoding)
+    public HootRequest post(String string, String encoding)
             throws UnsupportedEncodingException {
         mOperation = Operation.POST;
         mData = new ByteArrayInputStream(string.getBytes("UTF-8"));
         return this;
     }
 
-    public HootRequest<T> head() {
+    public HootRequest head() {
         mOperation = Operation.HEAD;
         return this;
     }
 
-    public HootRequest<T> delete() {
+    public HootRequest delete() {
         mOperation = Operation.DELETE;
         return this;
     }
 
-    public HootRequest<T> patch() {
+    public HootRequest patch() {
         mOperation = Operation.PATCH;
         return this;
     }
 
-    public HootRequest<T> put(String string, String encoding)
+    public HootRequest put(String string, String encoding)
             throws UnsupportedEncodingException {
         mOperation = Operation.PUT;
         mData = new ByteArrayInputStream(string.getBytes("UTF-8"));
         return this;
     }
 
-    public HootRequest<T> put(InputStream postData) {
+    public HootRequest put(InputStream postData) {
         mOperation = Operation.PUT;
         mData = postData;
         return this;
     }
 
-    public HootRequest<T> setNumRetries(int retries) {
+    public HootRequest setNumRetries(int retries) {
         mNumRetries = retries;
         return this;
     }
 
-    public HootRequest<T> setQueryParameters(Map<String, String> queryParameters) {
+    public HootRequest setQueryParameters(Map<String, String> queryParameters) {
         mQueryParameters = queryParameters;
         return this;
     }
 
-    public HootRequest<T> setHeaders(Properties headers) {
+    public HootRequest setHeaders(Properties headers) {
         mHeaders = headers;
         return this;
     }
 
-    public HootRequest<T> setSuccessfulResponseCodes(List<Integer> codes) {
+    public HootRequest setSuccessfulResponseCodes(List<Integer> codes) {
         mResult.setSuccessfulResponseCodes(codes);
         return this;
     }
 
-    public HootRequest<T> setBasicAuth(String username, String password) {
+    public HootRequest setBasicAuth(String username, String password) {
         // TODO
         return this;
     }
 
-    public HootRequest<T> setTag(Object opaque) {
+    public HootRequest setTag(Object opaque) {
         mOpaqueTag = opaque;
         return this;
     }
 
-    @SuppressWarnings("unchecked")
-    public HootRequest<T> execute() throws IllegalStateException {
+    public HootRequest execute() throws IllegalStateException {
         if (mTask == null && !isComplete()) {
-            mTask = new HootTask<T>();
+            mTask = new HootTask();
             mTask.execute(this);
         } else {
             throw new IllegalStateException(
@@ -219,7 +211,7 @@ public class HootRequest<T> {
      * 
      * @param listener
      */
-    public void bindListener(HootRequestListener<T> listener) {
+    public void bindListener(HootRequestListener listener) {
         mListener = listener;
         if (mComplete) {
             if (getResult().isSuccess()) {
@@ -240,7 +232,7 @@ public class HootRequest<T> {
     /**
      * @return the mListener
      */
-    public HootRequestListener<T> getListener() {
+    public HootRequestListener getListener() {
         return mListener;
     }
 
@@ -250,24 +242,21 @@ public class HootRequest<T> {
     private static final int DEFAULT_NUM_RETRIES = 0;
     private Operation mOperation;
     private int mNumRetries = DEFAULT_NUM_RETRIES;
-    private HootTask<T> mTask = null;
-    private HootResult<T> mResult = new HootResult<T>();
+    private HootTask mTask = null;
+    private HootResult mResult = new HootResult();
     private Map<String, String> mQueryParameters = null;
     private Properties mHeaders = null;
     private InputStream mData = null;
-    private HootRequestListener<T> mListener = null;
-    private HootDeserializer<T> mDeserializer;
+    private HootRequestListener mListener = null;
     private String mResource;
     private Hoot mHoot;
     private boolean mComplete = false;
-    private Class<T> mClazz;
     private Object mOpaqueTag = null;
 
-    HootRequest(Hoot hoot, HootRequestListener<T> listener, Class<T> clazz) {
+    HootRequest(Hoot hoot, HootRequestListener listener) {
         mHoot = hoot;
         mOperation = Operation.GET;
         mListener = listener;
-        mClazz = clazz;
     }
 
     enum Operation {
@@ -317,35 +306,13 @@ public class HootRequest<T> {
      * @param mResult
      *            the mResult to set
      */
-    void setResult(HootResult<T> result) {
+    void setResult(HootResult result) {
         mResult = result;
     }
 
     void setComplete(boolean isComplete) {
         mComplete = isComplete;
         mTask = null;
-    }
-
-    void deserializeResult() throws IOException {
-
-        // see if we need to read out to a string. Either we have no
-        // deserializer or we do and it operates on a string.
-        if (mDeserializer == null
-                || (mDeserializer != null && !mDeserializer
-                        .isStreamDeserializer())) {
-            mResult.setResponse(convertStreamToString(mResult
-                    .getResponseStream()));
-        }
-
-        if (mDeserializer != null) {
-            if (mDeserializer.isStreamDeserializer()) {
-                mResult.setDeserializedResult(mDeserializer.deserialize(mResult
-                        .getResponseStream()));
-            } else {
-                mResult.setDeserializedResult(mDeserializer.deserialize(mResult
-                        .getResponseString()));
-            }
-        }
     }
 
     Uri buildUri() {
@@ -361,11 +328,6 @@ public class HootRequest<T> {
             }
         }
         return builder.build();
-    }
-
-    private static String convertStreamToString(InputStream is)
-            throws IOException {
-        return IOUtils.toString(is, "UTF-8");
     }
 
 }

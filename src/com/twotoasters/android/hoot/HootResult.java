@@ -16,13 +16,16 @@
 
 package com.twotoasters.android.hoot;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class HootResult<T> {
+import org.apache.commons.io.IOUtils;
+
+public class HootResult {
 
     public boolean isSuccess() {
         return mSuccessfulResponseCodes != null ? mSuccessfulResponseCodes
@@ -30,16 +33,8 @@ public class HootResult<T> {
                 .contains(mResponseCode);
     }
 
-    public T getDeserializedResult() {
-        return mResultStorage;
-    }
-
     public String getResponseString() {
         return mResponse;
-    }
-
-    public InputStream getResponseStream() {
-        return mResponseStream;
     }
 
     public int getResponseCode() {
@@ -54,6 +49,10 @@ public class HootResult<T> {
         return mHeaders;
     }
 
+    public Object getDeserializedResult() {
+        return mDeserializer.getDeserializedResult();
+    }
+
     // -------------------------------------------------------------------------
     // END OF PUBLIC INTERFACE
     // -------------------------------------------------------------------------
@@ -64,19 +63,19 @@ public class HootResult<T> {
         sDefaultSuccessfulCodes.add(HttpURLConnection.HTTP_CREATED);
     }
     private List<Integer> mSuccessfulResponseCodes = null;
-    private T mResultStorage = null;
     private String mResponse;
     private int mResponseCode;
     private Exception mException;
     private Map<String, List<String>> mHeaders;
     private InputStream mResponseStream;
+    private HootDeserializer<?> mDeserializer;
+
+    <T> void setDeserializer(HootDeserializer<T> deserializer) {
+        mDeserializer = deserializer;
+    }
 
     void setSuccessfulResponseCodes(List<Integer> codes) {
         mSuccessfulResponseCodes = codes;
-    }
-
-    void setDeserializedResult(T result) {
-        mResultStorage = result;
     }
 
     void setResponse(String response) {
@@ -91,11 +90,40 @@ public class HootResult<T> {
         mException = e;
     }
 
-    public void setHeaders(Map<String, List<String>> headerFields) {
+    void setHeaders(Map<String, List<String>> headerFields) {
         mHeaders = headerFields;
     }
 
-    public void setResponseStream(InputStream responseStream) {
+    void setResponseStream(InputStream responseStream) {
         mResponseStream = responseStream;
     }
+
+    InputStream getResponseStream() {
+        return mResponseStream;
+    }
+
+    void deserializeResult() throws IOException {
+        // see if we need to read out to a string. Either we have no
+        // deserializer or we do and it operates on a string.
+        if (mDeserializer == null
+                || (mDeserializer != null && !mDeserializer
+                        .isStreamDeserializer())) {
+            setResponse(convertStreamToString(getResponseStream()));
+        }
+
+        if (mDeserializer != null) {
+            if (mDeserializer.isStreamDeserializer()) {
+                mDeserializer.performDeserialize(getResponseStream());
+            } else {
+                mDeserializer.performDeserialize(getResponseString());
+            }
+        }
+
+    }
+
+    private static String convertStreamToString(InputStream is)
+            throws IOException {
+        return IOUtils.toString(is, "UTF-8");
+    }
+
 }
