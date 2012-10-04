@@ -96,6 +96,10 @@ public class HootRequest<T> {
         return mResult;
     }
 
+    public Class<T> getRequestClass() {
+        return mClazz;
+    }
+
     public Object getTag() {
         return mOpaqueTag;
     }
@@ -256,12 +260,14 @@ public class HootRequest<T> {
     private String mResource;
     private Hoot mHoot;
     private boolean mComplete = false;
+    private Class<T> mClazz;
     private Object mOpaqueTag = null;
 
-    HootRequest(Hoot hoot, HootRequestListener<T> listener) {
+    HootRequest(Hoot hoot, HootRequestListener<T> listener, Class<T> clazz) {
         mHoot = hoot;
         mOperation = Operation.GET;
         mListener = listener;
+        mClazz = clazz;
     }
 
     enum Operation {

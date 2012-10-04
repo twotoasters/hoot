@@ -63,7 +63,8 @@ public class HootTest extends InstrumentationTestCase {
     public void testGet() {
         final CountDownLatch latch = new CountDownLatch(1);
         final HootRequest<Get> request = mHootRestClient
-                .createRequest(new TestHootListener<Get>(latch, true)).get()
+                .createRequest(new TestHootListener<Get>(latch, true),
+                        Get.class).get()
                 .setDeserializer(new TestHootDeserializer<Get>(Get.class));
 
         assertNotNull(request);
@@ -83,7 +84,9 @@ public class HootTest extends InstrumentationTestCase {
         params.put("this", "that");
         params.put("here", "there");
         final HootRequest<GetWithParams> request = mHootRestClient
-                .createRequest(new TestHootListener<GetWithParams>(latch, true))
+                .createRequest(
+                        new TestHootListener<GetWithParams>(latch, true),
+                        GetWithParams.class)
                 .get()
                 .setResource("params")
                 .setQueryParameters(params)
@@ -110,7 +113,8 @@ public class HootTest extends InstrumentationTestCase {
         headers.put("HOOT_TEST_HEADER", "header");
         final HootRequest<GetWithHeaders> request = mHootRestClient
                 .createRequest(
-                        new TestHootListener<GetWithHeaders>(latch, true))
+                        new TestHootListener<GetWithHeaders>(latch, true),
+                        GetWithHeaders.class)
                 .get()
                 .setResource("headers")
                 .setHeaders(headers)
@@ -140,7 +144,7 @@ public class HootTest extends InstrumentationTestCase {
         final HootRequest<GetWithHeadersAndParams> request = mHootRestClient
                 .createRequest(
                         new TestHootListener<GetWithHeadersAndParams>(latch,
-                                true))
+                                true), GetWithHeadersAndParams.class)
                 .get()
                 .setResource("headers.and.params")
                 .setHeaders(headers)
@@ -167,8 +171,8 @@ public class HootTest extends InstrumentationTestCase {
     public void testGetFailure404() {
         final CountDownLatch latch = new CountDownLatch(1);
         final HootRequest<Get> request = mHootRestClient
-                .createRequest(new TestHootListener<Get>(latch, true)).get()
-                .setResource("error/404")
+                .createRequest(new TestHootListener<Get>(latch, true),
+                        Get.class).get().setResource("error/404")
                 .setDeserializer(new TestHootDeserializer<Get>(Get.class));
 
         assertNotNull(request);
@@ -185,8 +189,8 @@ public class HootTest extends InstrumentationTestCase {
         final List<Integer> successfulResults = new ArrayList<Integer>();
         successfulResults.add(HttpURLConnection.HTTP_NOT_MODIFIED);
         final HootRequest<Void> request = mHootRestClient
-                .createRequest(new TestHootListener<Void>(latch, false)).get()
-                .setResource("error/304")
+                .createRequest(new TestHootListener<Void>(latch, false), null)
+                .get().setResource("error/304")
                 .setSuccessfulResponseCodes(successfulResults);
 
         assertNotNull(request);
@@ -203,8 +207,8 @@ public class HootTest extends InstrumentationTestCase {
         InputStream is = new ByteArrayInputStream(
                 new String("this is a post").getBytes());
         final HootRequest<Post> request = mHootRestClient
-                .createRequest(new TestHootListener<Post>(latch, true))
-                .post(is)
+                .createRequest(new TestHootListener<Post>(latch, true),
+                        Post.class).post(is)
                 .setDeserializer(new TestHootDeserializer<Post>(Post.class));
 
         assertNotNull(request);
@@ -226,7 +230,8 @@ public class HootTest extends InstrumentationTestCase {
                 new String("this is a post").getBytes());
         final HootRequest<PostWithHeaders> request = mHootRestClient
                 .createRequest(
-                        new TestHootListener<PostWithHeaders>(latch, true))
+                        new TestHootListener<PostWithHeaders>(latch, true),
+                        PostWithHeaders.class)
                 .post(is)
                 .setResource("headers")
                 .setHeaders(headers)

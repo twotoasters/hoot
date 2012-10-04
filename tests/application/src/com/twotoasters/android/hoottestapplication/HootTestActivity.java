@@ -79,9 +79,12 @@ public class HootTestActivity extends HootBaseActivity {
     @SuppressWarnings("unchecked")
     @Override
     public boolean onRequestReconnect(HootRequest<?> request) {
-        mRequest = (HootRequest<TestData>) request;
-        connectToRequest(mRequest, testDataRequestListener);
-        return true;
+        if (request.getRequestClass() == TestData.class) {
+            mRequest = (HootRequest<TestData>) request;
+            connectToRequest(mRequest, testDataRequestListener);
+            return true;
+        }
+        return false;
     }
 
     // -------------------------------------------------------------------------
