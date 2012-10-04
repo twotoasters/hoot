@@ -327,15 +327,21 @@ public class HootRequest<T> {
     }
 
     void deserializeResult() throws IOException {
+
+        // see if we need to read out to a string. Either we have no
+        // deserializer or we do and it operates on a string.
         if (mDeserializer == null
-                || (mDeserializer != null && mDeserializer
+                || (mDeserializer != null && !mDeserializer
                         .isStreamDeserializer())) {
-            mResult.setDeserializedResult(mDeserializer.deserialize(mResult
-                    .getResponseStream()));
-        } else {
             mResult.setResponse(convertStreamToString(mResult
                     .getResponseStream()));
-            if (mDeserializer != null) {
+        }
+
+        if (mDeserializer != null) {
+            if (mDeserializer.isStreamDeserializer()) {
+                mResult.setDeserializedResult(mDeserializer.deserialize(mResult
+                        .getResponseStream()));
+            } else {
                 mResult.setDeserializedResult(mDeserializer.deserialize(mResult
                         .getResponseString()));
             }
