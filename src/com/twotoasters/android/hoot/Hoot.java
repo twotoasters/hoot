@@ -52,12 +52,23 @@ public class Hoot {
         mGlobalDeserializer = deserializer;
     }
 
+    /**
+     * Set the connection timeout.
+     * @param timeout the timeout in milliseconds.
+     */
+    public void setTimeout(int timeout) {
+        mTimeout = timeout;
+    }
+
     // -------------------------------------------------------------------------
     // END OF PUBLIC INTERFACE
     // -------------------------------------------------------------------------
     private String mBasicAuthUsername = null;
     private String mBasicAuthPassword = null;
     private String mBaseUrl;
+
+    private int mTimeout = 15 * 1000;
+
     private HootTransport mTransport;
     private HootGlobalDeserializer mGlobalDeserializer;
 
@@ -85,6 +96,10 @@ public class Hoot {
         return "Basic "
                 + Base64.encodeToString(new String(getBasicAuthUsername() + ":"
                         + getBasicAuthPassword()).getBytes(), Base64.NO_WRAP);
+    }
+
+    int getTimeout() {
+        return mTimeout;
     }
 
     void cancelRequest(HootRequest hootRequest) {
