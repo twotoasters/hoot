@@ -32,10 +32,9 @@ import org.apache.commons.io.IOUtils;
 import android.util.Log;
 
 class HootTransportHttpUrlConnection implements HootTransport {
-
     @Override
     public void setup(Hoot hoot) {
-        // Nothing really to do here for this one.
+        mTimeout = hoot.getTimeout();
     }
 
     @Override
@@ -52,6 +51,8 @@ class HootTransportHttpUrlConnection implements HootTransport {
             String url = request.buildUri().toString();
             Log.v(TAG, "Executing [" + url + "]");
             connection = (HttpURLConnection) new URL(url).openConnection();
+            connection.setConnectTimeout(mTimeout);
+            connection.setReadTimeout(mTimeout);
             synchronized (mConnectionMap) {
                 mConnectionMap.put(request, connection);
             }
@@ -104,6 +105,8 @@ class HootTransportHttpUrlConnection implements HootTransport {
     // -------------------------------------------------------------------------
     // END OF PUBLIC INTERFACE
     // -------------------------------------------------------------------------
+    private int mTimeout = 15 * 1000;
+
     private enum StreamingMode {
         CHUNKED, FIXED
     };

@@ -64,10 +64,10 @@ class HootTransportHttpClient implements HootTransport {
     public void setup(Hoot hoot) {
         HttpParams params = new BasicHttpParams();
         ConnManagerParams.setMaxTotalConnections(params, 10);
-        ConnManagerParams.setTimeout(params, 2000);
+        ConnManagerParams.setTimeout(params, hoot.getTimeout());
         HttpProtocolParams.setVersion(params, HttpVersion.HTTP_1_1);
-        HttpConnectionParams.setConnectionTimeout(params, 15000);
-        HttpConnectionParams.setSoTimeout(params, 15000);
+        HttpConnectionParams.setConnectionTimeout(params, hoot.getTimeout());
+        HttpConnectionParams.setSoTimeout(params, hoot.getTimeout());
         HttpConnectionParams.setTcpNoDelay(params, true);
 
         SchemeRegistry schemeRegistry = new SchemeRegistry();
