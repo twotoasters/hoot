@@ -37,15 +37,13 @@ public class HootRequest {
      * 
      * @author bjdupuis
      * 
-     * @param <T>
-     *            the type of object expected from the request
+     * @param <T> the type of object expected from the request
      */
     public interface HootRequestListener {
         /**
          * Called when the request is actually being transmitted.
          * 
-         * @param request
-         *            the request
+         * @param request the request
          */
         public void onRequestStarted(HootRequest request);
 
@@ -54,8 +52,7 @@ public class HootRequest {
          * received. This is called whether the request was successful or not.
          * Examples of usage include dismissing progress dialogs.
          * 
-         * @param request
-         *            the request... again.
+         * @param request the request... again.
          */
         public void onRequestCompleted(HootRequest request);
 
@@ -314,8 +311,7 @@ public class HootRequest {
     }
 
     /**
-     * @param mResult
-     *            the mResult to set
+     * @param mResult the mResult to set
      */
     void setResult(HootResult result) {
         mResult = result;
@@ -327,6 +323,12 @@ public class HootRequest {
     }
 
     Uri buildUri() {
+        // fix the "double-slash" issue with base URLs ending in slash and
+        // resource beginning with slash
+        if (mHoot.getBaseUrl().endsWith("/") && mResource != null
+                && mResource.startsWith("/")) {
+            mResource = mResource.substring(1);
+        }
         Uri.Builder builder = Uri.parse(mHoot.getBaseUrl()).buildUpon()
                 .appendEncodedPath(mResource == null ? "" : mResource);
 
