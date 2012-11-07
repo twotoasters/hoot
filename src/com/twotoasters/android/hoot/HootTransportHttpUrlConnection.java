@@ -72,11 +72,11 @@ class HootTransportHttpUrlConnection implements HootTransport {
                 hootResult.setHeaders(connection.getHeaderFields());
                 hootResult.setResponseStream(new BufferedInputStream(connection
                         .getInputStream()));
-                request.deserializeResult();
             } else {
                 hootResult.setResponseStream(new BufferedInputStream(connection
                         .getErrorStream()));
             }
+            request.deserializeResult();
         } catch (Exception e) {
             request.getResult().setException(e);
             e.printStackTrace();
@@ -180,7 +180,8 @@ class HootTransportHttpUrlConnection implements HootTransport {
         // TODO handle other OP types
     }
 
-    private Map<HootRequest, HttpURLConnection> mConnectionMap = new HashMap<HootRequest, HttpURLConnection>();
+    private Map<HootRequest, HttpURLConnection> mConnectionMap =
+            new HashMap<HootRequest, HttpURLConnection>();
 
     private static final String TAG = HootTransportHttpUrlConnection.class
             .getSimpleName();
