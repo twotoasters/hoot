@@ -43,12 +43,14 @@ public class HootTask extends AsyncTask<HootRequest, HootRequest, HootRequest> {
 
     @Override
     protected void onPostExecute(HootRequest request) {
-        if (request != null && request.getListener() != null
-                && request.getResult() != null) {
+        if (request != null) {
+            request.setComplete(true);
+        }
+
+        if (request.getListener() != null) {
             request.getListener().onRequestCompleted(request);
             HootResult result = request.getResult();
-            request.setComplete(true);
-            if (result.isSuccess()) {
+            if (result != null && result.isSuccess()) {
                 request.getListener().onSuccess(request, result);
             } else {
                 request.getListener().onFailure(request, result);
