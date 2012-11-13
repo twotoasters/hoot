@@ -123,11 +123,16 @@ public class HootRequest {
         mData = postData;
         return this;
     }
+    
+    public HootRequest post(String string) 
+    		throws UnsupportedEncodingException {
+    	return post(string, "UTF-8");
+    }
 
     public HootRequest post(String string, String encoding)
             throws UnsupportedEncodingException {
         mOperation = Operation.POST;
-        mData = new ByteArrayInputStream(string.getBytes("UTF-8"));
+        mData = new ByteArrayInputStream(string.getBytes(encoding));
         return this;
     }
 
