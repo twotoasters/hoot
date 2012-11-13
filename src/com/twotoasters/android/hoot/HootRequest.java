@@ -107,6 +107,10 @@ public class HootRequest {
         mResource = resource;
         return this;
     }
+    
+    public String getResource() {
+    	return mResource;
+    }
 
     public <T> HootRequest setDeserializer(HootDeserializer<T> deserializer) {
         mResult.setDeserializer(deserializer);
@@ -297,14 +301,14 @@ public class HootRequest {
     /**
      * @return the mQueryParameters
      */
-    Map<String, String> getQueryParameters() {
+    public Map<String, String> getQueryParameters() {
         return mQueryParameters;
     }
 
     /**
      * @return the mHeaders
      */
-    Properties getHeaders() {
+    public Properties getHeaders() {
         return mHeaders;
     }
 
