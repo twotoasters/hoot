@@ -124,9 +124,13 @@ public class HootRequest {
         return this;
     }
     
-    public HootRequest post(String string) 
-    		throws UnsupportedEncodingException {
-    	return post(string, "UTF-8");
+    public HootRequest post(String string) {
+    	try {
+			post(string, "UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			// UTF-8 is supported
+		}
+    	return this;
     }
 
     public HootRequest post(String string, String encoding)
