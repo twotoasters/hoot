@@ -27,14 +27,19 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import javax.net.ssl.HttpsURLConnection;
+
 import org.apache.commons.io.IOUtils;
+import org.apache.http.conn.ssl.X509HostnameVerifier;
 
 import android.util.Log;
 
 class HootTransportHttpUrlConnection implements HootTransport {
+	
     @Override
     public void setup(Hoot hoot) {
         mTimeout = hoot.getTimeout();
+        mSSLHostNameVerifier = hoot.getSSLHostNameVerifier();
     }
 
     @Override
@@ -51,6 +56,10 @@ class HootTransportHttpUrlConnection implements HootTransport {
             String url = request.buildUri().toString();
             Log.v(TAG, "Executing [" + url + "]");
             connection = (HttpURLConnection) new URL(url).openConnection();
+            if (connection instanceof HttpsURLConnection) {
+            	HttpsURLConnection httpsConnection = (HttpsURLConnection) connection;
+            	httpsConnection.setHostnameVerifier(mSSLHostNameVerifier);
+            }
             connection.setConnectTimeout(mTimeout);
             connection.setReadTimeout(mTimeout);
             synchronized (mConnectionMap) {
@@ -106,6 +115,8 @@ class HootTransportHttpUrlConnection implements HootTransport {
     // END OF PUBLIC INTERFACE
     // -------------------------------------------------------------------------
     private int mTimeout = 15 * 1000;
+    
+    private X509HostnameVerifier mSSLHostNameVerifier;
 
     private enum StreamingMode {
         CHUNKED, FIXED

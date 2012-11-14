@@ -73,8 +73,9 @@ class HootTransportHttpClient implements HootTransport {
         SchemeRegistry schemeRegistry = new SchemeRegistry();
         schemeRegistry.register(new Scheme("http", PlainSocketFactory
                 .getSocketFactory(), 80));
-        schemeRegistry.register(new Scheme("https", SSLSocketFactory
-                .getSocketFactory(), 443));
+        SSLSocketFactory sslSocketFactory = SSLSocketFactory.getSocketFactory();
+        sslSocketFactory.setHostnameVerifier(hoot.getSSLHostNameVerifier());
+        schemeRegistry.register(new Scheme("https", sslSocketFactory, 443));
 
         ClientConnectionManager cm = new ThreadSafeClientConnManager(params,
                 schemeRegistry);

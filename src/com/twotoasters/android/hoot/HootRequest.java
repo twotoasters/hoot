@@ -107,6 +107,10 @@ public class HootRequest {
         mResource = resource;
         return this;
     }
+    
+    public String getResource() {
+    	return mResource;
+    }
 
     public <T> HootRequest setDeserializer(HootDeserializer<T> deserializer) {
         mResult.setDeserializer(deserializer);
@@ -123,11 +127,20 @@ public class HootRequest {
         mData = postData;
         return this;
     }
+    
+    public HootRequest post(String string) {
+    	try {
+			post(string, "UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			// UTF-8 is supported
+		}
+    	return this;
+    }
 
     public HootRequest post(String string, String encoding)
             throws UnsupportedEncodingException {
         mOperation = Operation.POST;
-        mData = new ByteArrayInputStream(string.getBytes("UTF-8"));
+        mData = new ByteArrayInputStream(string.getBytes(encoding));
         return this;
     }
 
@@ -288,14 +301,14 @@ public class HootRequest {
     /**
      * @return the mQueryParameters
      */
-    Map<String, String> getQueryParameters() {
+    public Map<String, String> getQueryParameters() {
         return mQueryParameters;
     }
 
     /**
      * @return the mHeaders
      */
-    Properties getHeaders() {
+    public Properties getHeaders() {
         return mHeaders;
     }
 

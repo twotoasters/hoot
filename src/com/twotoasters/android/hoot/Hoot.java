@@ -16,6 +16,10 @@
 
 package com.twotoasters.android.hoot;
 
+
+import org.apache.http.conn.ssl.SSLSocketFactory;
+import org.apache.http.conn.ssl.X509HostnameVerifier;
+
 import android.os.Build;
 import android.util.Base64;
 
@@ -47,6 +51,10 @@ public class Hoot {
         mBasicAuthUsername = username;
         mBasicAuthPassword = password;
     }
+    
+    public void setSSLHostNameVerifier(X509HostnameVerifier sslHostNameVerifier) {
+    	mSSLHostNameVerifier = sslHostNameVerifier;
+    }
 
     public void setGlobalDeserializer(HootGlobalDeserializer deserializer) {
         mGlobalDeserializer = deserializer;
@@ -65,6 +73,7 @@ public class Hoot {
     // -------------------------------------------------------------------------
     private String mBasicAuthUsername = null;
     private String mBasicAuthPassword = null;
+    private X509HostnameVerifier mSSLHostNameVerifier = SSLSocketFactory.STRICT_HOSTNAME_VERIFIER;
     private String mBaseUrl;
 
     private int mTimeout = 15 * 1000;
@@ -90,6 +99,10 @@ public class Hoot {
 
     String getBasicAuthPassword() {
         return mBasicAuthPassword;
+    }
+    
+    X509HostnameVerifier getSSLHostNameVerifier() {
+    	return mSSLHostNameVerifier;
     }
 
     String calculateBasicAuthHeader() {
