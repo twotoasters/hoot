@@ -116,8 +116,7 @@ public class HootActivityHelper {
 
         HootRequest request = kit
                 .createRequest();
-        mRequests.add(request);
-        return request;
+        return connectToRequest(request, listener);
     }
 
     // -------------------------------------------------------------------------
