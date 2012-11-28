@@ -31,6 +31,8 @@ import org.apache.commons.io.IOUtils;
 
 import android.util.Log;
 
+import com.twotoasters.android.hoot.HootRequest.Operation;
+
 class HootTransportHttpUrlConnection implements HootTransport {
     @Override
     public void setup(Hoot hoot) {
@@ -151,7 +153,7 @@ class HootTransportHttpUrlConnection implements HootTransport {
         switch (request.getOperation()) {
             case DELETE:
                 connection.setRequestMethod("DELETE");
-                connection.setDoOutput(true);
+                connection.setDoOutput(false);
                 break;
             case POST:
                 connection.setRequestMethod("POST");
@@ -169,7 +171,8 @@ class HootTransportHttpUrlConnection implements HootTransport {
                 break;
         }
 
-        if (mStreamingMode == StreamingMode.CHUNKED) {
+        if (request.getOperation() != Operation.DELETE
+                && mStreamingMode == StreamingMode.CHUNKED) {
             connection.setChunkedStreamingMode(0);
         }
 
