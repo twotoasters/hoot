@@ -162,7 +162,6 @@ class HootTransportHttpUrlConnection implements HootTransport {
         switch (request.getOperation()) {
             case DELETE:
                 connection.setRequestMethod("DELETE");
-                connection.setDoOutput(true);
                 break;
             case POST:
                 connection.setRequestMethod("POST");
