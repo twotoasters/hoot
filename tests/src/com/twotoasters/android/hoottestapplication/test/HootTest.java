@@ -44,6 +44,10 @@ import com.twotoasters.android.hoot.HootGlobalDeserializer;
 import com.twotoasters.android.hoot.HootRequest;
 import com.twotoasters.android.hoot.HootRequest.HootRequestListener;
 import com.twotoasters.android.hoot.HootResult;
+import com.twotoasters.android.hoottestapplication.data.Delete;
+import com.twotoasters.android.hoottestapplication.data.DeleteWithHeaders;
+import com.twotoasters.android.hoottestapplication.data.DeleteWithHeadersAndParams;
+import com.twotoasters.android.hoottestapplication.data.DeleteWithParams;
 import com.twotoasters.android.hoottestapplication.data.Get;
 import com.twotoasters.android.hoottestapplication.data.GetWithHeaders;
 import com.twotoasters.android.hoottestapplication.data.GetWithHeadersAndParams;
@@ -217,6 +221,139 @@ public class HootTest extends InstrumentationTestCase {
                 && request.getResult().isSuccess()
                 && request.getResult().getResponseCode() == 304);
     }
+    
+    // start delete
+    public void testDelete() {
+        final CountDownLatch latch = new CountDownLatch(1);
+        final HootDeserializer<Delete> deserializer = new TestHootDeserializer<Delete>(
+                Delete.class);
+        final HootRequest request = mHootRestClient.createRequest().delete()
+                .setDeserializer(deserializer)
+                .bindListener(new TestHootListener(latch, true));
+
+        assertNotNull(request);
+
+        executeTest(request, latch);
+
+        assertTrue(request.getResult() != null
+                && request.getResult().isSuccess()
+                && request.getResult().getDeserializedResult() != null
+                && deserializer.getDeserializedResult().test
+                        .equals("This is a test"));
+    }
+    
+    public void testDeleteWithQueryParams() {
+        final CountDownLatch latch = new CountDownLatch(1);
+        Map<String, String> params = new LinkedHashMap<String, String>();
+        params.put("this", "that");
+        params.put("here", "there");
+        final HootDeserializer<DeleteWithParams> deserializer = new TestHootDeserializer<DeleteWithParams>(
+        		DeleteWithParams.class);
+        final HootRequest request = mHootRestClient.createRequest().delete()
+                .setResource("params").setQueryParameters(params)
+                .setDeserializer(deserializer)
+                .bindListener(new TestHootListener(latch, true));
+
+        assertNotNull(request);
+
+        executeTest(request, latch);
+
+        assertTrue(request.getResult() != null
+                && request.getResult().isSuccess()
+                && request.getResult().getDeserializedResult() != null);
+
+        assertTrue(deserializer.getDeserializedResult().thisString
+                .equals("that")
+                && deserializer.getDeserializedResult().hereString
+                        .equals("there"));
+    }
+
+    public void testDeleteWithHeaders() {
+        final CountDownLatch latch = new CountDownLatch(1);
+        Properties headers = new Properties();
+        headers.put("HOOT_TEST_HEADER", "header");
+        final HootDeserializer<DeleteWithHeaders> deserializer = new TestHootDeserializer<DeleteWithHeaders>(
+        		DeleteWithHeaders.class);
+        final HootRequest request = mHootRestClient.createRequest().delete()
+                .setResource("headers").setHeaders(headers)
+                .setDeserializer(deserializer)
+                .bindListener(new TestHootListener(latch, true));
+
+        assertNotNull(request);
+
+        executeTest(request, latch);
+
+        assertTrue(request.getResult() != null
+                && request.getResult().isSuccess()
+                && request.getResult().getDeserializedResult() != null
+                && deserializer.getDeserializedResult().headers
+                        .equals("header"));
+
+    }
+
+    public void testDeleteWithHeadersAndParams() {
+        final CountDownLatch latch = new CountDownLatch(1);
+        Properties headers = new Properties();
+        headers.put("HOOT_TEST_HEADER", "header");
+        Map<String, String> params = new LinkedHashMap<String, String>();
+        params.put("this", "that");
+        params.put("here", "there");
+        HootDeserializer<DeleteWithHeadersAndParams> deserializer = new TestHootDeserializer<DeleteWithHeadersAndParams>(
+        		DeleteWithHeadersAndParams.class);
+        final HootRequest request = mHootRestClient.createRequest().delete()
+                .setResource("headers.and.params").setHeaders(headers)
+                .setQueryParameters(params).setDeserializer(deserializer)
+                .bindListener(new TestHootListener(latch, true));
+
+        assertNotNull(request);
+
+        executeTest(request, latch);
+
+        assertTrue(request.getResult() != null
+                && request.getResult().isSuccess()
+                && request.getResult().getDeserializedResult() != null);
+
+        assertTrue(deserializer.getDeserializedResult().headers
+                .equals("header")
+                && deserializer.getDeserializedResult().params.thisString
+                        .equals("that")
+                && deserializer.getDeserializedResult().params.hereString
+                        .equals("there"));
+    }
+
+    public void testDeleteFailure404() {
+        final CountDownLatch latch = new CountDownLatch(1);
+        final HootRequest request = mHootRestClient.createRequest().delete()
+                .setResource("error/404")
+                .bindListener(new TestHootListener(latch, true));
+
+        assertNotNull(request);
+
+        executeTest(request, latch);
+
+        assertTrue(request.getResult() != null
+                && !request.getResult().isSuccess()
+                && request.getResult().getResponseCode() == 404);
+    }
+
+    public void testDeleteAcceptNotModified() {
+        final CountDownLatch latch = new CountDownLatch(1);
+        final List<Integer> successfulResults = new ArrayList<Integer>();
+        successfulResults.add(HttpURLConnection.HTTP_NOT_MODIFIED);
+        final HootRequest request = mHootRestClient.createRequest().delete()
+                .setResource("error/304")
+                .setSuccessfulResponseCodes(successfulResults)
+                .bindListener(new TestHootListener(latch, false));
+
+        assertNotNull(request);
+
+        executeTest(request, latch);
+
+        assertTrue(request.getResult() != null
+                && request.getResult().isSuccess()
+                && request.getResult().getResponseCode() == 304);
+    }
+    // end delete
 
     public void testPost() {
         final CountDownLatch latch = new CountDownLatch(1);
