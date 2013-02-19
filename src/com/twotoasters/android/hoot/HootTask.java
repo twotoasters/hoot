@@ -17,8 +17,9 @@
 package com.twotoasters.android.hoot;
 
 import android.os.AsyncTask;
+import android.util.Log;
 
-public class HootTask extends AsyncTask<HootRequest, HootRequest, HootRequest> {
+public class HootTask extends HootThreadPoolAsyncTask<HootRequest, HootRequest, HootRequest> {
 
     @Override
     protected HootRequest doInBackground(HootRequest... params) {

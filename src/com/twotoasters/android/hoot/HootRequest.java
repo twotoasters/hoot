@@ -205,7 +205,7 @@ public class HootRequest {
     public HootRequest execute() throws IllegalStateException {
         if (mTask == null && !isComplete()) {
             mTask = new HootTask();
-            mTask.execute(this);
+            mTask.executeOnThreadPoolExecutor(this);
         } else {
             throw new IllegalStateException(
                     "Can't execute the same request more than once");
