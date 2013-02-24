@@ -45,6 +45,7 @@ import org.apache.http.conn.scheme.Scheme;
 import org.apache.http.conn.scheme.SchemeRegistry;
 import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.BasicResponseHandler;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
 import org.apache.http.params.BasicHttpParams;
@@ -105,12 +106,16 @@ class HootTransportHttpClient implements HootTransport {
                     break;
                 case PUT:
                     HttpPut put = new HttpPut(uri);
-                    put.setEntity(getEntity(request.getData()));
+                    if (request.getData() != null) {
+                    	put.setEntity(getEntity(request.getData()));
+                    }
                     requestBase = put;
                     break;
                 case POST:
                     HttpPost post = new HttpPost(uri);
-                    post.setEntity(getEntity(request.getData()));
+                    if (request.getData() != null) {
+                    	post.setEntity(getEntity(request.getData()));
+                    }
                     requestBase = post;
                     break;
                 case HEAD:
