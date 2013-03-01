@@ -2,11 +2,11 @@
 <classpath>
 	<classpathentry kind="con" path="com.android.ide.eclipse.adt.ANDROID_FRAMEWORK"/>
 	<classpathentry kind="con" path="com.android.ide.eclipse.adt.LIBRARIES"/>
-	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="src" path="gen"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/HootTestApplication"/>
 	<classpathentry kind="lib" path="libs/robotium-solo-3.3.jar"/>
 	<classpathentry kind="lib" path="libs/hamcrest-core-1.3.0RC2.jar"/>
 	<classpathentry kind="lib" path="libs/marvin-1.0.1.jar"/>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="src" path="gen"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/HootTestActivity"/>
 	<classpathentry kind="output" path="bin/classes"/>
 </classpath>
