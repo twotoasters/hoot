@@ -144,6 +144,17 @@ public class HootRequest {
         return this;
     }
 
+    public HootRequest post(Map<String,String>queryParameters){
+    	mOperation = Operation.POST;
+    	mData = getPostDataStream(queryParameters);
+    	return this;
+    }
+    
+    public HootRequest post() {
+    	mOperation = Operation.POST;
+    	return this;
+    }
+    
     public HootRequest head() {
         mOperation = Operation.HEAD;
         return this;
@@ -202,6 +213,29 @@ public class HootRequest {
         return this;
     }
 
+    public InputStream getPostDataStream(Map<String, String> queryParameters) {
+		boolean isFirst = true;
+		StringBuffer sb = new StringBuffer();
+		for (String key : queryParameters.keySet()) {
+			appendIfNotNullOrEmpty(sb, isFirst ? null : "&");
+			sb.append(key).append('=').append(queryParameters.get(key));
+			isFirst = false;
+		}
+
+		try {
+			return new ByteArrayInputStream(sb.toString().getBytes("UTF-8"));
+		} catch (UnsupportedEncodingException e) {
+
+		}
+		return null;
+	}
+
+	public void appendIfNotNullOrEmpty(StringBuffer sb, String s) {
+		if (s!=null && s.length()>0) {
+			sb.append(s);
+		}
+	}
+    
     public HootRequest execute() throws IllegalStateException {
         if (mTask == null && !isComplete()) {
             mTask = new HootTask();
@@ -342,9 +376,17 @@ public class HootRequest {
                 && mResource.startsWith("/")) {
             mResource = mResource.substring(1);
         }
-        Uri.Builder builder = Uri.parse(mHoot.getBaseUrl()).buildUpon()
-                .appendEncodedPath(mResource == null ? "" : mResource);
 
+        Uri.Builder builder;
+    
+        if(mResource==null){
+        	builder = Uri.parse(mHoot.getBaseUrl()).buildUpon();
+        }else{
+        	builder = Uri.parse(mHoot.getBaseUrl()).buildUpon().appendEncodedPath(mResource);
+        }
+        
+        
+        
         if (mQueryParameters != null && !mQueryParameters.isEmpty()) {
             Iterator<Entry<String, String>> iter = mQueryParameters.entrySet()
                     .iterator();
