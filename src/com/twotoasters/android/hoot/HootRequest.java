@@ -30,6 +30,9 @@ import android.net.Uri;
 
 public class HootRequest {
 
+	public static final int STREAMING_MODE_CHUNKED = 1;
+	public static final int STREAMING_MODE_FIXED = 2;
+	
     /**
      * The interface for request listeners to implement to be notified of events
      * in the request lifecycle. All callbacks are guaranteed to be called from
@@ -112,6 +115,10 @@ public class HootRequest {
     	return mResource;
     }
 
+    public int getStreamingMode(){
+    	return streamingMode;
+    }
+    
     public <T> HootRequest setDeserializer(HootDeserializer<T> deserializer) {
         mResult.setDeserializer(deserializer);
         return this;
@@ -212,6 +219,11 @@ public class HootRequest {
         mExpectedType = type;
         return this;
     }
+    
+    public HootRequest setStreamingMode(int streamingMode){
+    	this.streamingMode = streamingMode;
+    	return this;
+    }
 
     public InputStream getPostDataStream(Map<String, String> queryParameters) {
 		boolean isFirst = true;
@@ -308,6 +320,7 @@ public class HootRequest {
     private Object mOpaqueTag;
     private boolean mCancelled;
     private Class<?> mExpectedType;
+    private int streamingMode;
 
     HootRequest(Hoot hoot) {
         mHoot = hoot;
