@@ -11,9 +11,9 @@ to local data objects. It also uses the best transport mechanism available depen
 
 Make a new HootRequest to the URL you want to request, bind a listener, and call execute on the method you want to use. That's it.
 
-HootRequest request = Hoot.createInstanceWithBaseUrl("https://www.twotoasters.com/someplace.json").createRequest();
+    HootRequest request = Hoot.createInstanceWithBaseUrl("https://www.twotoasters.com/someplace.json").createRequest();
     	
-request.bindListener(new HootRequestListener() {
+    request.bindListener(new HootRequestListener() {
 
 	@Override
 	public void onSuccess(HootRequest request, HootResult result) {		
@@ -34,9 +34,9 @@ request.bindListener(new HootRequestListener() {
 	@Override
 	public void onCancelled(HootRequest request) {
 	}
-});
+    });
 		
-request.get().execute();
+    request.get().execute();
 
 You can also set basic authorization (username/password), HTTP headers, post/get parameters, and additional http connection flags on your request.
 
