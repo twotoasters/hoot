@@ -3,7 +3,7 @@
 A powerful, flexible, lightweight Android library for making network requests and working with RESTful web APIs.
 
 Hoot provides an easy way to make GET, PUT, POST and DELETE requests to a web server. All requests are performed off the main UI thread as AsyncTasks. Simply bind a listener to 
-the request and you will be notified when it completes (successfully or not). You can perform as many synchronous requests as Android allows and get notified as each completes. It 
+the request and you will be notified when it completes (successfully or not). You can perform as many concurrent requests as Android allows and get notified as each completes. It 
 allows for an easy way to handle the reconnection of requests (for example on device rotations). Hoot supports basic authorization and helps to deserialize responses
 to local data objects. It also uses the best transport mechanism available depending on the version of Android running.
 
@@ -40,6 +40,9 @@ Make a new HootRequest to the URL you want to request, bind a listener, and call
 
 You can also set basic authorization (username/password), HTTP headers, post/get parameters, and additional http connection flags on your request.
 
+## OAuth 1.0 & 2.0
+Many popular APIs nowadays (Google, Facebook, Twitter etc.) use OAuth to perform user validation. <a href="https://github.com/twotoasters/AndrOAuth">AndrOAuth</a> is a simple library
+that uses Hoot and makes it extremely easy to perform OAuth1.0 and 2.0 requests and validation.
 
 ## Building
 
