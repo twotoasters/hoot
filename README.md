@@ -40,7 +40,7 @@ Make a new HootRequest to the URL you want to request, bind a listener, and call
 
 You can also set basic authorization (username/password), HTTP headers, post/get parameters, and additional http connection flags on your request.
 
-## OAuth 1.0 & 2.0
+## OAuth
 Many popular APIs nowadays (Google, Facebook, Twitter etc.) use OAuth to perform user validation. <a href="https://github.com/twotoasters/AndrOAuth">AndrOAuth</a> is a simple library
 that uses Hoot and makes it extremely easy to perform OAuth1.0 and 2.0 requests and validation.
 
