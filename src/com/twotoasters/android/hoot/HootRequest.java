@@ -390,15 +390,10 @@ public class HootRequest {
             mResource = mResource.substring(1);
         }
 
-        Uri.Builder builder;
-    
-        if(mResource==null){
-        	builder = Uri.parse(mHoot.getBaseUrl()).buildUpon();
-        }else{
-        	builder = Uri.parse(mHoot.getBaseUrl()).buildUpon().appendEncodedPath(mResource);
-        }
-        
-        
+        Uri.Builder builder = Uri.parse(mHoot.getBaseUrl()).buildUpon();
+        if(mResource!=null){
+        	builder = builder.appendEncodedPath(mResource);
+        }        
         
         if (mQueryParameters != null && !mQueryParameters.isEmpty()) {
             Iterator<Entry<String, String>> iter = mQueryParameters.entrySet()
