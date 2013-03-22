@@ -51,6 +51,11 @@ class HootTransportHttpUrlConnection implements HootTransport {
         mStreamingMode = (request.getQueryParameters() == null && request
                 .getData() == null) ? StreamingMode.CHUNKED
                 : StreamingMode.FIXED;
+        
+        if(request.getStreamingMode()==HootRequest.STREAMING_MODE_FIXED){
+        	mStreamingMode = StreamingMode.FIXED;
+        }
+        
         HttpURLConnection connection = null;
         try {
             String url = request.buildUri().toString();
