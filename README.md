@@ -14,26 +14,26 @@ Make a new HootRequest to the URL you want to request, bind a listener, and call
     HootRequest request = Hoot.createInstanceWithBaseUrl("https://www.twotoasters.com/someplace.json").createRequest();
     	
     request.bindListener(new HootRequestListener() {
-
-	@Override
-	public void onSuccess(HootRequest request, HootResult result) {		
-	}
-
-	@Override
-	public void onRequestStarted(HootRequest request) {
-	}
-
-	@Override
-	public void onRequestCompleted(HootRequest request) {
-	}
-
-	@Override
-	public void onFailure(HootRequest request, HootResult result) {
-	}
-
-	@Override
-	public void onCancelled(HootRequest request) {
-	}
+	
+		@Override
+		public void onSuccess(HootRequest request, HootResult result) {		
+		}
+	
+		@Override
+		public void onRequestStarted(HootRequest request) {
+		}
+	
+		@Override
+		public void onRequestCompleted(HootRequest request) {
+		}
+	
+		@Override
+		public void onFailure(HootRequest request, HootResult result) {
+		}
+	
+		@Override
+		public void onCancelled(HootRequest request) {
+		}
     });
 		
     request.get().execute();
