@@ -47,25 +47,29 @@ public class Hoot {
         return mTransport.synchronousExecute(request);
     }
 
-    public void setBasicAuth(String username, String password) {
+    public Hoot setBasicAuth(String username, String password) {
         mBasicAuthUsername = username;
         mBasicAuthPassword = password;
+        return this;
     }
     
-    public void setSSLHostNameVerifier(X509HostnameVerifier sslHostNameVerifier) {
+    public Hoot setSSLHostNameVerifier(X509HostnameVerifier sslHostNameVerifier) {
     	mSSLHostNameVerifier = sslHostNameVerifier;
+    	return this;
     }
 
-    public void setGlobalDeserializer(HootGlobalDeserializer deserializer) {
+    public Hoot setGlobalDeserializer(HootGlobalDeserializer deserializer) {
         mGlobalDeserializer = deserializer;
+        return this;
     }
 
     /**
      * Set the connection timeout.
      * @param timeout the timeout in milliseconds.
      */
-    public void setTimeout(int timeout) {
+    public Hoot setTimeout(int timeout) {
         mTimeout = timeout;
+        return this;
     }
 
     // -------------------------------------------------------------------------
