@@ -62,6 +62,10 @@ public class Hoot {
         mGlobalDeserializer = deserializer;
         return this;
     }
+    
+    public static void setMinLogPriority(int minLogPriority) {
+    	Log.setMinPriority(minLogPriority);
+    }
 
     /**
      * Set the connection timeout.

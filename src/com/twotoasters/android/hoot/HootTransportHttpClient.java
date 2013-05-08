@@ -53,8 +53,6 @@ import org.apache.http.params.HttpParams;
 import org.apache.http.params.HttpProtocolParams;
 import org.apache.http.protocol.HTTP;
 
-import android.util.Log;
-
 class HootTransportHttpClient implements HootTransport {
 
     private static final String TAG = HootTransportHttpClient.class

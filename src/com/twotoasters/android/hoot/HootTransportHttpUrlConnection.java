@@ -32,8 +32,6 @@ import javax.net.ssl.HttpsURLConnection;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.conn.ssl.X509HostnameVerifier;
 
-import android.util.Log;
-
 class HootTransportHttpUrlConnection implements HootTransport {
 	
     @Override

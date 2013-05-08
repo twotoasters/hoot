@@ -25,8 +25,6 @@ import java.util.Map;
 
 import org.apache.commons.io.IOUtils;
 
-import android.util.Log;
-
 public class HootResult {
 
     private static final String TAG = HootResult.class.getSimpleName();
