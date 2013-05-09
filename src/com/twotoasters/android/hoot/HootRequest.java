@@ -26,6 +26,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 
+import org.apache.http.entity.mime.MultipartEntity;
+
 import android.net.Uri;
 
 public class HootRequest {
@@ -141,6 +143,12 @@ public class HootRequest {
 		} catch (UnsupportedEncodingException e) {
 			// UTF-8 is supported
 		}
+    	return this;
+    }
+    
+    public HootRequest post(MultipartEntity multipartEntity) {
+    	mOperation = Operation.POST;
+    	mMultipartEntity = multipartEntity;
     	return this;
     }
 
@@ -312,6 +320,7 @@ public class HootRequest {
     private HootResult mResult = new HootResult();
     private Map<String, String> mQueryParameters;
     private Properties mHeaders;
+    private MultipartEntity mMultipartEntity;
     private InputStream mData;
     private HootRequestListener mListener;
     private String mResource;
@@ -357,6 +366,14 @@ public class HootRequest {
      */
     public Properties getHeaders() {
         return mHeaders;
+    }
+    
+    /**
+     * 
+     * @return the mMultipartEntity
+     */
+    public MultipartEntity getMultipartEntity() {
+    	return mMultipartEntity;
     }
 
     /**
