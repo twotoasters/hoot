@@ -105,12 +105,12 @@ class HootTransportHttpClient implements HootTransport {
                     break;
                 case PUT:
                     HttpPut put = new HttpPut(uri);
-                    put.setEntity(getEntity(request.getData()));
+                    put.setEntity(getEntity(request));
                     requestBase = put;
                     break;
                 case POST:
                     HttpPost post = new HttpPost(uri);
-                    post.setEntity(getEntity(request.getData()));
+                    post.setEntity(getEntity(request));
                     requestBase = post;
                     break;
                 case HEAD:
@@ -178,10 +178,14 @@ class HootTransportHttpClient implements HootTransport {
         return result;
     }
 
-    private HttpEntity getEntity(InputStream data)
+    private HttpEntity getEntity(HootRequest request)
             throws UnsupportedEncodingException, IOException {
+    	
+    	if (request.getMultipartEntity() != null) {
+    		return request.getMultipartEntity();
+    	}
 
-        return new StringEntity(IOUtils.toString(data), HTTP.UTF_8);
+        return new StringEntity(IOUtils.toString(request.getData()), HTTP.UTF_8);
     }
 
     @Override
