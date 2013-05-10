@@ -31,6 +31,7 @@ import javax.net.ssl.HttpsURLConnection;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.http.conn.ssl.X509HostnameVerifier;
+import org.apache.http.entity.mime.MultipartEntity;
 
 import android.util.Log;
 
@@ -49,8 +50,8 @@ class HootTransportHttpUrlConnection implements HootTransport {
         }
 
         mStreamingMode = (request.getQueryParameters() == null && request
-                .getData() == null) ? StreamingMode.CHUNKED
-                : StreamingMode.FIXED;
+                .getData() == null && request.getMultipartEntity() == null) 
+                ? StreamingMode.CHUNKED : StreamingMode.FIXED;
         
         if(request.getStreamingMode()==HootRequest.STREAMING_MODE_FIXED){
         	mStreamingMode = StreamingMode.FIXED;
@@ -74,9 +75,12 @@ class HootTransportHttpUrlConnection implements HootTransport {
             setRequestMethod(request, connection);
             setRequestHeaders(request, connection);
 
-            if (request.getData() != null) {
+            if (request.getMultipartEntity() != null) {
+            	setMultipartEntity(request, connection);
+            } else if (request.getData() != null) {
                 setRequestData(request, connection);
             }
+            
             HootResult hootResult = request.getResult();
             hootResult.setResponseCode(connection.getResponseCode());
             Log.d(TAG,
@@ -126,6 +130,27 @@ class HootTransportHttpUrlConnection implements HootTransport {
     private enum StreamingMode {
         CHUNKED, FIXED
     };
+    
+    private void setMultipartEntity(HootRequest request,
+    		HttpURLConnection connection) throws IOException {
+    	OutputStream os = null;
+    	MultipartEntity entity = request.getMultipartEntity();
+    	try {
+    		connection.setRequestProperty(entity.getContentType().getName(), entity.getContentType().getValue());
+    		
+    		os = new BufferedOutputStream(connection.getOutputStream(), (int)request.getMultipartEntity().getContentLength());
+    		entity.writeTo(os);
+    	} finally {
+    		if (os != null) {
+    			try {
+    				os.flush();
+    				os.close();
+    			} catch (Exception e) {
+    				e.printStackTrace();
+    			}
+    		}
+    	}
+    }
 
     private void setRequestData(HootRequest request,
             HttpURLConnection connection) throws IOException {
