@@ -435,6 +435,9 @@ public class HootRequest {
             else {
                 getListener().onFailure(this, result);
             }
+
+            // unbind to remove the reference 
+            unbindListener(false);
         }
     }
 
