@@ -32,9 +32,9 @@ import android.net.Uri;
 
 public class HootRequest {
 
-	public static final int STREAMING_MODE_CHUNKED = 1;
-	public static final int STREAMING_MODE_FIXED = 2;
-	
+    public static final int STREAMING_MODE_CHUNKED = 1;
+    public static final int STREAMING_MODE_FIXED = 2;
+
     /**
      * The interface for request listeners to implement to be notified of events
      * in the request lifecycle. All callbacks are guaranteed to be called from
@@ -112,15 +112,15 @@ public class HootRequest {
         mResource = resource;
         return this;
     }
-    
+
     public String getResource() {
-    	return mResource;
+        return mResource;
     }
 
-    public int getStreamingMode(){
-    	return streamingMode;
+    public int getStreamingMode() {
+        return streamingMode;
     }
-    
+
     public <T> HootRequest setDeserializer(HootDeserializer<T> deserializer) {
         mResult.setDeserializer(deserializer);
         return this;
@@ -136,40 +136,40 @@ public class HootRequest {
         mData = postData;
         return this;
     }
-    
+
     public HootRequest post(String string) {
-    	try {
-			post(string, "UTF-8");
-		} catch (UnsupportedEncodingException e) {
-			// UTF-8 is supported
-		}
-    	return this;
-    }
-    
-    public HootRequest post(MultipartEntity multipartEntity) {
-    	mOperation = Operation.POST;
-    	mMultipartEntity = multipartEntity;
-    	return this;
+        try {
+            post(string, "UTF-8");
+        }
+        catch (UnsupportedEncodingException e) {
+            // UTF-8 is supported
+        }
+        return this;
     }
 
-    public HootRequest post(String string, String encoding)
-            throws UnsupportedEncodingException {
+    public HootRequest post(MultipartEntity multipartEntity) {
+        mOperation = Operation.POST;
+        mMultipartEntity = multipartEntity;
+        return this;
+    }
+
+    public HootRequest post(String string, String encoding) throws UnsupportedEncodingException {
         mOperation = Operation.POST;
         mData = new ByteArrayInputStream(string.getBytes(encoding));
         return this;
     }
 
-    public HootRequest post(Map<String,String>queryParameters){
-    	mOperation = Operation.POST;
-    	mData = getPostDataStream(queryParameters);
-    	return this;
+    public HootRequest post(Map<String, String> queryParameters) {
+        mOperation = Operation.POST;
+        mData = getPostDataStream(queryParameters);
+        return this;
     }
-    
+
     public HootRequest post() {
-    	mOperation = Operation.POST;
-    	return this;
+        mOperation = Operation.POST;
+        return this;
     }
-    
+
     public HootRequest head() {
         mOperation = Operation.HEAD;
         return this;
@@ -185,8 +185,7 @@ public class HootRequest {
         return this;
     }
 
-    public HootRequest put(String string, String encoding)
-            throws UnsupportedEncodingException {
+    public HootRequest put(String string, String encoding) throws UnsupportedEncodingException {
         mOperation = Operation.PUT;
         mData = new ByteArrayInputStream(string.getBytes("UTF-8"));
         return this;
@@ -227,42 +226,43 @@ public class HootRequest {
         mExpectedType = type;
         return this;
     }
-    
-    public HootRequest setStreamingMode(int streamingMode){
-    	this.streamingMode = streamingMode;
-    	return this;
+
+    public HootRequest setStreamingMode(int streamingMode) {
+        this.streamingMode = streamingMode;
+        return this;
     }
 
     public InputStream getPostDataStream(Map<String, String> queryParameters) {
-		boolean isFirst = true;
-		StringBuffer sb = new StringBuffer();
-		for (String key : queryParameters.keySet()) {
-			appendIfNotNullOrEmpty(sb, isFirst ? null : "&");
-			sb.append(key).append('=').append(queryParameters.get(key));
-			isFirst = false;
-		}
+        boolean isFirst = true;
+        StringBuffer sb = new StringBuffer();
+        for (String key : queryParameters.keySet()) {
+            appendIfNotNullOrEmpty(sb, isFirst ? null : "&");
+            sb.append(key).append('=').append(queryParameters.get(key));
+            isFirst = false;
+        }
 
-		try {
-			return new ByteArrayInputStream(sb.toString().getBytes("UTF-8"));
-		} catch (UnsupportedEncodingException e) {
+        try {
+            return new ByteArrayInputStream(sb.toString().getBytes("UTF-8"));
+        }
+        catch (UnsupportedEncodingException e) {
 
-		}
-		return null;
-	}
+        }
+        return null;
+    }
 
-	public void appendIfNotNullOrEmpty(StringBuffer sb, String s) {
-		if (s!=null && s.length()>0) {
-			sb.append(s);
-		}
-	}
-    
+    public void appendIfNotNullOrEmpty(StringBuffer sb, String s) {
+        if (s != null && s.length() > 0) {
+            sb.append(s);
+        }
+    }
+
     public HootRequest execute() throws IllegalStateException {
         if (mTask == null && !isComplete()) {
             mTask = new HootTask();
             mTask.executeOnThreadPoolExecutor(this);
-        } else {
-            throw new IllegalStateException(
-                    "Can't execute the same request more than once");
+        }
+        else {
+            throw new IllegalStateException("Can't execute the same request more than once");
         }
         return this;
     }
@@ -286,11 +286,7 @@ public class HootRequest {
     public HootRequest bindListener(HootRequestListener listener) {
         mListener = listener;
         if (mComplete) {
-            if (getResult().isSuccess()) {
-                listener.onSuccess(this, getResult());
-            } else {
-                listener.onFailure(this, getResult());
-            }
+            handleCompletion();
         }
 
         return this;
@@ -367,13 +363,13 @@ public class HootRequest {
     public Properties getHeaders() {
         return mHeaders;
     }
-    
+
     /**
      * 
      * @return the mMultipartEntity
      */
     public MultipartEntity getMultipartEntity() {
-    	return mMultipartEntity;
+        return mMultipartEntity;
     }
 
     /**
@@ -402,19 +398,17 @@ public class HootRequest {
     Uri buildUri() {
         // fix the "double-slash" issue with base URLs ending in slash and
         // resource beginning with slash
-        if (mHoot.getBaseUrl().endsWith("/") && mResource != null
-                && mResource.startsWith("/")) {
+        if (mHoot.getBaseUrl().endsWith("/") && mResource != null && mResource.startsWith("/")) {
             mResource = mResource.substring(1);
         }
 
         Uri.Builder builder = Uri.parse(mHoot.getBaseUrl()).buildUpon();
-        if(mResource!=null){
-        	builder = builder.appendEncodedPath(mResource);
-        }        
-        
+        if (mResource != null) {
+            builder = builder.appendEncodedPath(mResource);
+        }
+
         if (mQueryParameters != null && !mQueryParameters.isEmpty()) {
-            Iterator<Entry<String, String>> iter = mQueryParameters.entrySet()
-                    .iterator();
+            Iterator<Entry<String, String>> iter = mQueryParameters.entrySet().iterator();
             while (iter.hasNext()) {
                 Entry<String, String> entry = iter.next();
                 builder.appendQueryParameter(entry.getKey(), entry.getValue());
@@ -425,6 +419,23 @@ public class HootRequest {
 
     void deserializeResult() throws IOException {
         mResult.deserializeResult(mHoot.getGlobalDeserializer(), mExpectedType);
+    }
+
+    /**
+     * Handle all aspects of completion from a task perspective.
+     */
+    void handleCompletion() {
+        setComplete(true);
+        if (getListener() != null) {
+            getListener().onRequestCompleted(this);
+            HootResult result = getResult();
+            if (result != null && result.isSuccess()) {
+                getListener().onSuccess(this, result);
+            }
+            else {
+                getListener().onFailure(this, result);
+            }
+        }
     }
 
 }
