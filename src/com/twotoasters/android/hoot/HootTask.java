@@ -16,8 +16,6 @@
 
 package com.twotoasters.android.hoot;
 
-import android.os.AsyncTask;
-import android.util.Log;
 
 public class HootTask extends HootThreadPoolAsyncTask<HootRequest, HootRequest, HootRequest> {
 
@@ -32,12 +30,12 @@ public class HootTask extends HootThreadPoolAsyncTask<HootRequest, HootRequest, 
         publishProgress(params);
 
         do {
-            HootResult result = request.getHoot().executeRequestSynchronously(
-                    request);
+            HootResult result = request.getHoot().executeRequestSynchronously(request);
             if (result.isSuccess()) {
                 return request;
             }
-        } while (request.shouldRetry() && !isCancelled());
+        }
+        while (request.shouldRetry() && !isCancelled());
 
         return request;
     }
@@ -45,17 +43,7 @@ public class HootTask extends HootThreadPoolAsyncTask<HootRequest, HootRequest, 
     @Override
     protected void onPostExecute(HootRequest request) {
         if (request != null) {
-            request.setComplete(true);
-        }
-
-        if (request.getListener() != null) {
-            request.getListener().onRequestCompleted(request);
-            HootResult result = request.getResult();
-            if (result != null && result.isSuccess()) {
-                request.getListener().onSuccess(request, result);
-            } else {
-                request.getListener().onFailure(request, result);
-            }
+            request.handleCompletion();
         }
     }
 
